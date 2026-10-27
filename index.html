@@ -1590,13 +1590,16 @@
 
         <!-- 实时 11 档完整色板 (50 - 950)：支持点击选档预览 + 复制 HEX + WCAG AA 对比度门禁校验 -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;font-size:9.5px;color:var(--wb-muted);gap:4px;">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🌈 <b>11档色阶(50–950)</b> <span id="scale11-source-badge" style="color:var(--wb-accent-text);">(点选档位+复制)</span></span>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🌈 <b>11档明暗阶梯(50浅→950深)</b> <span id="scale11-source-badge" style="color:var(--wb-accent-text);">(点选可调深浅)</span></span>
           <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
             <span id="scale11-copy-hint" style="font-family:'JetBrainsMonoLocal',monospace;">自动档:600</span>
-            <button id="btn-reset-stop-auto" onclick="selectBrandStop('auto')" style="padding:1px 5px;font-size:8.5px;font-weight:700;border-radius:4px;border:1px solid var(--wb-accent);background:var(--wb-accent-soft);color:var(--wb-accent-text);cursor:pointer;display:none;" title="恢复规范自动主色档位 (Light:600/700 · Dark:400)">🔄规范档</button>
+            <button id="btn-reset-stop-auto" onclick="selectBrandStop('auto')" style="padding:1px 5px;font-size:8.5px;font-weight:700;border-radius:4px;border:1px solid var(--wb-accent);background:var(--wb-accent-soft);color:var(--wb-accent-text);cursor:pointer;display:none;" title="恢复规范自动主色档位 (Light:600/700 · Dark:400)">🔄恢复规范档</button>
           </div>
         </div>
         <div class="scale11-strip" id="inline-scale11-strip"></div>
+        <div id="scale11-role-explain" style="margin-top:3px;padding:3px 6px;border-radius:5px;background:var(--wb-sub-bg);border:1px solid var(--wb-border);font-size:9.5px;color:var(--wb-muted);line-height:1.35;">
+          💡 <b>色阶作用</b>：系统自动用 <code>50</code> 做浅底标签、<code>600/400</code> 做主按钮、<code>700</code> 做品牌字、<code>900</code> 做深字；点选上方任一色块可整体调浅/调深主按钮与渐变。
+        </div>
 
         <!-- 品牌渐变 (3x2 网格，完整显示不截断) & 多色渐变 (4列网格) -->
         <div class="ctrl-row" style="margin-top:4px;">
@@ -2450,8 +2453,27 @@
     return scale;
   }
 
-  // 根据 11 档色阶构建 5 种品牌渐变 (严格对齐 tokens/tokens.json AppGradients.brand)
-  function buildBrandGradientsFromScale(scale, isDark) {
+  // 根据 11 档色阶构建 5 种品牌渐变 (严格对齐 tokens/tokens.json AppGradients.brand；当用户手动点选了某一色阶时，主渐变同步围绕该色阶联动变化)
+  function buildBrandGradientsFromScale(scale, isDark, activeBrandStop, isManualStop) {
+    if (isManualStop && activeBrandStop && scale[activeBrandStop]) {
+      const idx = Math.max(0, SCALE_STOPS.indexOf(activeBrandStop));
+      const prevStop = SCALE_STOPS[Math.max(0, idx - 1)];
+      const nextStop = SCALE_STOPS[Math.min(10, idx + 1)];
+      const next2Stop = SCALE_STOPS[Math.min(10, idx + 2)];
+      return {
+        primary: `linear-gradient(135deg, ${scale[prevStop]} 0%, ${scale[activeBrandStop]} 52%, ${scale[nextStop]} 100%)`,
+        strong:  `linear-gradient(135deg, ${scale[activeBrandStop]} 0%, ${scale[nextStop]} 55%, ${scale[next2Stop]} 100%)`,
+        subtle:  !isDark
+          ? `linear-gradient(135deg, ${scale['50']} 0%, ${scale['100']} 55%, ${scale['200']} 100%)`
+          : `linear-gradient(135deg, ${scale['950']} 0%, ${scale['900']} 52%, ${scale['800']} 100%)`,
+        glow:    !isDark
+          ? `radial-gradient(closest-side, ${scale['50']} 0%, ${scale[prevStop]} 58%, ${scale[activeBrandStop]} 100%)`
+          : `radial-gradient(closest-side, ${scale['950']} 0%, ${scale[nextStop]} 58%, ${scale[activeBrandStop]} 100%)`,
+        surface: !isDark
+          ? `linear-gradient(135deg, #FFFFFF 0%, ${scale['50']} 58%, ${scale['100']} 100%)`
+          : `linear-gradient(135deg, #000000 0%, ${scale['950']} 60%, ${scale['900']} 100%)`
+      };
+    }
     if (!isDark) {
       return {
         primary: `linear-gradient(135deg, ${scale['400']} 0%, ${scale['600']} 52%, ${scale['800']} 100%)`,
@@ -2536,6 +2558,28 @@
     if (hintEl && !hintEl.dataset.copyLock) {
       hintEl.style.color = passAA ? 'var(--wb-accent-text)' : '#FFB020';
       hintEl.textContent = `${isManualStop ? '手动:' : '规范档:'}${activeStop} (${ratio}:1 ${passAA ? '✓AA' : '⚠️<4.5'})`;
+    }
+
+    const STOP_USAGE_MAP = {
+      '50':  '50档 (极浅底)：规范中自动用作浅色模式的【选中标签/徽标底色】(如"PRO"、"首页"胶囊底)',
+      '100': '100档 (浅柔底)：规范中自动用作深色模式标签文字色 & 毛玻璃氛围光晕底色',
+      '200': '200档 (轻柔色)：规范中自动用作轻柔容器渐变 (subtle) 与聚光过渡色',
+      '300': '300档 (亮部色)：规范中自动用作【深色模式的品牌文字/链接色】与暗黑渐变高亮端',
+      '400': '400档 (深色主色)：规范中自动用作【深色模式的主按钮/开关填充色】(黑底对比度高且不刺眼)',
+      '500': '500档 (活力主色)：介于亮色与标准主色之间，规范中用作主渐变起始高亮端',
+      '600': '600档 (浅色标准主色)：规范中自动用作【浅色模式的主按钮/开关色】(蓝/紫/红/灰默认主色)',
+      '700': '700档 (深邃主色/字色)：规范中用作【浅色次按钮/金额文字色】及绿/青/晴空蓝的 AA 增强主色',
+      '800': '800档 (重音深色)：规范中自动用作主渐变 (primary) 与高强渐变 (strong) 的深色尾端',
+      '900': '900档 (极深容器/字)：规范中用作浅色标签内的深色文字 & 深色模式的品牌容器底色',
+      '950': '950档 (墨黑底/字)：规范中用作【深色模式主按钮上的极深文字色 (onBrand)】'
+    };
+    const explainEl = document.getElementById('scale11-role-explain');
+    if (explainEl) {
+      if (!isManualStop) {
+        explainEl.innerHTML = `💡 <b>自动协同模式 (推荐)</b>：无需手动选档！系统正自动同时使用 <code>50</code> 做浅底标签、<code>${specStop}</code> 做主按钮、<code>${isDark ? '300' : '700'}</code> 做品牌字、<code>900/950</code> 做深字。点击任一色块可强制将该档设为主按钮色预览。`;
+      } else {
+        explainEl.innerHTML = `🎯 <b>当前点选 ${activeStop} 档 (${activeHex})</b>：${STOP_USAGE_MAP[activeStop] || ''}。右侧主按钮、渐变、开关与数字已全部切换为 <b>${activeStop} 档</b> 预览（点右上角「🔄恢复规范档」可切回自动分配）。`;
+      }
     }
 
     const roleMap = {
@@ -2633,12 +2677,20 @@
 
     const brandWrap = document.getElementById('inline-brand-semantic-row');
     if (brandWrap) {
+      const stopNum = parseInt(activeStop, 10);
+      const minLightTextStop = Math.max(600, parseInt(lightStop, 10));
+      const brandTextStop = isManualStop
+        ? (isDark ? (stopNum > 400 ? '300' : activeStop) : (stopNum < minLightTextStop ? '700' : activeStop))
+        : (isDark ? '300' : '700');
+      const brandTextHexNow = scale[brandTextStop];
+      const onBrandFg = onBrandHex.toUpperCase() === '#FFFFFF' ? '#0B0E14' : '#FFFFFF';
+      const brandTextFg = parseInt(brandTextStop, 10) >= 500 ? '#FFFFFF' : '#0B0E14';
       const brandSlots = [
-        { role: 'brand',       stop: activeStop,                 hex: brandHex,                             bg: brandHex,                             fg: onBrandHex,                          desc: '主品牌填充色' },
-        { role: 'onBrand',     stop: isDark ? '950' : 'white',   hex: onBrandHex,                           bg: onBrandHex,                           fg: isDark ? scale['200'] : '#0B0E14',   desc: '品牌块上前景文字/图标' },
-        { role: 'Container',   stop: isDark ? '900' : '50',      hex: isDark ? scale['900'] : scale['50'],  bg: isDark ? scale['900'] : scale['50'],  fg: isDark ? scale['100'] : scale['900'],desc: '品牌浅底容器/选中底' },
-        { role: 'onContainer', stop: isDark ? '100' : '900',     hex: isDark ? scale['100'] : scale['900'], bg: isDark ? scale['100'] : scale['900'], fg: isDark ? scale['900'] : '#FFFFFF',   desc: '品牌容器内文字' },
-        { role: 'brandText',   stop: isDark ? '300' : '700',     hex: isDark ? scale['300'] : scale['700'], bg: isDark ? scale['300'] : scale['700'], fg: isDark ? '#0B0E14' : '#FFFFFF',      desc: '独立品牌文字/次按钮字 (叠加8%仍≥4.5:1)' },
+        { role: 'brand',       stop: activeStop,                 hex: brandHex,                             bg: brandHex,                             fg: onBrandHex,                          desc: '主品牌填充色 (主按钮/开关)' },
+        { role: 'onBrand',     stop: onBrandHex === '#FFFFFF' ? 'white' : '950', hex: onBrandHex,           bg: onBrandHex,                           fg: onBrandFg,                           desc: '主按钮上的文字/图标色' },
+        { role: 'Container',   stop: isDark ? '900' : '50',      hex: isDark ? scale['900'] : scale['50'],  bg: isDark ? scale['900'] : scale['50'],  fg: isDark ? scale['100'] : scale['900'],desc: '品牌浅底容器/选中胶囊底' },
+        { role: 'onContainer', stop: isDark ? '100' : '900',     hex: isDark ? scale['100'] : scale['900'], bg: isDark ? scale['100'] : scale['900'], fg: isDark ? scale['900'] : '#FFFFFF',   desc: '品牌容器内的文字色' },
+        { role: 'brandText',   stop: brandTextStop,              hex: brandTextHexNow,                      bg: brandTextHexNow,                      fg: brandTextFg,                         desc: '次按钮/链接/金额品牌文字色' },
         { role: 'focusRing',   stop: activeStop,                 hex: brandHex,                             bg: brandHex,                             fg: onBrandHex,                          desc: '2px 键盘/遥控焦点环' }
       ];
       brandWrap.innerHTML = brandSlots.map(sl => `
@@ -3236,6 +3288,7 @@
         const idx = CAROUSEL_KEYS.indexOf(cfg.brand);
         const nextKey = CAROUSEL_KEYS[(idx + 1) % CAROUSEL_KEYS.length];
         cfg.brand = nextKey;
+        cfg.brandStop = 'auto';
         cfg.customHex = COLORS[nextKey].hex;
         render();
       }, 1500);
@@ -3256,6 +3309,7 @@
     const randomAnyColor = document.getElementById('chk-random-any-color')?.checked;
 
     cfg.preset = 'custom';
+    cfg.brandStop = 'auto';
     cfg.surface = pick(['flat', 'tonal', 'aurora', 'bento', 'stripe', 'glass', 'sharp']);
     cfg.borderWidth = 'auto';
     cfg.blur = SURFACE_DESC[cfg.surface].defaultBlur;
@@ -3275,7 +3329,7 @@
       cfg.customColorName = COLORS[pickedKey].cn;
     }
 
-    cfg.gradientMode = pick(['none', 'brand_primary', 'brand_strong', 'brand_subtle', 'brand_glow', 'multi_aurora', 'multi_spectrum', 'multi_cool', 'multi_warm']);
+    cfg.gradientMode = pick(['none', 'brand_primary', 'brand_strong', 'brand_subtle', 'brand_glow', 'brand_surface', 'multi_aurora', 'multi_spectrum', 'multi_cool', 'multi_warm']);
     cfg.mode = pick(['light', 'dark']);
     cfg.radius = pick(['0', '4', '8', '12', '16', '24', '999']);
     cfg.elevation = pick(['e0', 'e1', 'e2', 'e3']);
@@ -3459,6 +3513,7 @@
       pickerHsv.v = Math.round(100 - (y / rect.height) * 100);
       const hex = hsvToHex(pickerHsv.h, pickerHsv.s, pickerHsv.v);
       cfg.brand = 'custom';
+      cfg.brandStop = 'auto';
       cfg.customHex = hex;
       cfg.customColorName = `2D画布拾色 (${hex})`;
       syncModalColorInputs(hex, true);
@@ -3473,6 +3528,7 @@
       pickerHsv.h = Math.round((x / rect.width) * 360);
       const hex = hsvToHex(pickerHsv.h, pickerHsv.s, pickerHsv.v);
       cfg.brand = 'custom';
+      cfg.brandStop = 'auto';
       cfg.customHex = hex;
       cfg.customColorName = `色相环拾色 (${hex})`;
       syncModalColorInputs(hex, true);
@@ -3788,13 +3844,18 @@
     const specStop = isDark ? '400' : lightStop;
     const activeBrandStop = (targetCfg.brandStop && targetCfg.brandStop !== 'auto' && scale[targetCfg.brandStop]) ? targetCfg.brandStop : specStop;
     const isManualStop = Boolean(targetCfg.brandStop && targetCfg.brandStop !== 'auto');
+    const stopNum = parseInt(activeBrandStop, 10);
+    const minLightTextStop = Math.max(600, parseInt(lightStop, 10));
+    const brandTextStop = isManualStop
+      ? (isDark ? (stopNum > 400 ? '300' : activeBrandStop) : (stopNum < minLightTextStop ? '700' : activeBrandStop))
+      : (isDark ? '300' : '700');
     const brandHex = scale[activeBrandStop];
     const onBrandHex = isManualStop
       ? (getContrastRatio(brandHex, '#FFFFFF') >= getContrastRatio(brandHex, scale['950']) ? '#FFFFFF' : scale['950'])
       : (isDark ? scale['950'] : '#FFFFFF');
     const brandContainerHex = isDark ? scale['900'] : scale['50'];
     const onBrandContainerHex = isDark ? scale['100'] : scale['900'];
-    const brandTextHex = isDark ? scale['300'] : scale['700'];
+    const brandTextHex = scale[brandTextStop];
     const focusRingHex = isManualStop ? brandHex : (isDark ? scale['400'] : scale[lightStop]);
 
     // 次级中性语义槽位 (tokens.json semantic.light/dark.secondary*)
@@ -3805,7 +3866,7 @@
     const textTertiary = '#768898';
     const outlineVariant = isDark ? '#202830' : '#C5CDD9';
 
-    const brandGrads = buildBrandGradientsFromScale(scale, isDark);
+    const brandGrads = buildBrandGradientsFromScale(scale, isDark, activeBrandStop, isManualStop);
     const multiGrads = isDark ? MULTICOLOR_GRADIENTS.dark : MULTICOLOR_GRADIENTS.light;
     const gMode = targetCfg.gradientMode || 'brand_primary';
 
@@ -3846,7 +3907,7 @@
     let cardBackdrop = blurPx > 0 ? `backdrop-filter: blur(${blurPx}px); -webkit-backdrop-filter: blur(${blurPx}px);` : '';
 
     let secBtnBg = isDark ? 'rgba(255,255,255,0.06)' : '#FFFFFF';
-    let secBtnColor = isDark ? '#F1F3F6' : brandTextHex;
+    let secBtnColor = brandTextHex;
     let secBtnBorder = isDark ? '1px solid #313C47' : `1px solid ${borderCol}`;
     let heroNumStyle = `color:${isDark ? '#F1F3F6' : '#131820'};`;
     let badgeBorder = 'none';
@@ -3854,7 +3915,6 @@
     if (targetCfg.surface === 'sharp') {
       stageBg = isDark ? '#0B0E14' : '#FAFAFA';
       borderCol = isDark ? '#C5CDD9' : '#313C47';
-      secBtnColor = isDark ? '#F1F3F6' : '#131820';
       secBtnBorder = `1px solid ${controlOutline}`;
     } else if (targetCfg.surface === 'tonal') {
       stageBg = isDark ? '#0B0E14' : '#F8FAFC';
@@ -3862,13 +3922,11 @@
       subContainerBg = surfaceHigh;
       borderPx = '0px';
       secBtnBg = surfaceHigh;
-      secBtnColor = isDark ? '#F1F3F6' : '#131820';
       secBtnBorder = 'none';
     } else if (targetCfg.surface === 'bento') {
       stageBg = isDark ? '#0B0E14' : '#F1F3F6';
       borderPx = '0px';
       secBtnBg = surfaceLow;
-      secBtnColor = isDark ? '#E2E6ED' : '#313C47';
       secBtnBorder = 'none';
     } else if (targetCfg.surface === 'aurora') {
       stageBg = isDark ? '#06070B' : '#F1F3F6';
@@ -3881,11 +3939,10 @@
         ? `inset 0 1px 0 rgba(255,255,255,0.12), ${e.darkCss === 'none' ? '0 14px 30px -6px rgba(0,0,0,0.6)' : e.darkCss}`
         : `inset 0 1px 0 rgba(255,255,255,0.85), 0 10px 24px -4px ${c.glow}`;
       heroNumStyle = gMode === 'none'
-        ? `color:${isDark ? '#FFFFFF' : brandHex};`
-        : `background: ${ isDark ? `linear-gradient(90deg, #FFFFFF 12%, ${scale['300']} 100%)` : activeGradCss }; -webkit-background-clip: text; -webkit-text-fill-color: transparent;`;
+        ? `color:${isDark ? '#FFFFFF' : brandTextHex};`
+        : `background: ${ isDark ? `linear-gradient(90deg, #FFFFFF 12%, ${scale['300']} 100%)` : (gMode.startsWith('multi_') ? activeGradCss : `linear-gradient(135deg, ${scale['500']} 0%, ${scale['700']} 52%, ${scale['900']} 100%)`) }; -webkit-background-clip: text; -webkit-text-fill-color: transparent;`;
       badgeBorder = isDark ? `1px solid ${c.auroraBorder || 'rgba(139, 92, 246, 0.4)'}` : `1px solid ${scale['300']}`;
       secBtnBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.04)';
-      secBtnColor = isDark ? '#E2E6ED' : '#313C47';
       secBtnBorder = isDark ? '1px solid rgba(255,255,255,0.14)' : '1px solid #C5CDD9';
     } else if (targetCfg.surface === 'stripe') {
       cardTopBorder = `border-top: 4px solid ${brandHex};`;
@@ -3920,13 +3977,26 @@
     // - 当选了 subtle / glow / surface 容器渐变时，Hero 卡片与次容器直接渲染该渐变背景！
     const isContainerGrad = (gMode === 'brand_subtle' || gMode === 'brand_glow' || gMode === 'brand_surface');
     const heroCardBg = isContainerGrad ? activeGradCss : cardBg;
+    const readableTextGradCss = gMode.startsWith('multi_')
+      ? activeGradCss
+      : (isDark
+          ? (stopNum > 500 ? `linear-gradient(135deg, ${scale['200']} 0%, ${scale['400']} 52%, ${scale['600']} 100%)` : (isContainerGrad ? brandGrads.primary : activeGradCss))
+          : (stopNum < 500 ? `linear-gradient(135deg, ${scale['500']} 0%, ${scale['700']} 52%, ${scale['900']} 100%)` : (isContainerGrad ? brandGrads.primary : activeGradCss)));
     if (gMode !== 'none' && targetCfg.surface !== 'aurora') {
-      heroNumStyle = `background: ${isContainerGrad ? brandGrads.primary : activeGradCss}; -webkit-background-clip: text; -webkit-text-fill-color: transparent;`;
+      heroNumStyle = `background: ${readableTextGradCss}; -webkit-background-clip: text; -webkit-text-fill-color: transparent;`;
+    } else if (gMode === 'none' && targetCfg.surface !== 'aurora') {
+      heroNumStyle = `color: ${isManualStop ? brandTextHex : textMain};`;
     }
 
     const useGradOnPrimaryBtn = (gMode === 'brand_primary' || gMode === 'brand_strong' || gMode.startsWith('multi_'));
     const primaryBtnBg = useGradOnPrimaryBtn ? activeGradCss : brandHex;
-    const primaryBtnText = (useGradOnPrimaryBtn && !isDark) ? '#FFFFFF' : (useGradOnPrimaryBtn && gMode === 'brand_strong' ? '#0B0E14' : (useGradOnPrimaryBtn ? '#FFFFFF' : onBrandHex));
+    const primaryBtnText = gMode.startsWith('multi_')
+      ? '#FFFFFF'
+      : (isManualStop
+          ? onBrandHex
+          : ((useGradOnPrimaryBtn && !isDark) ? '#FFFFFF' : (useGradOnPrimaryBtn && gMode === 'brand_strong' ? '#0B0E14' : (useGradOnPrimaryBtn ? '#FFFFFF' : onBrandHex))));
+    const accentBannerBg = isContainerGrad ? brandGrads.primary : activeGradCss;
+    const accentBannerText = gMode.startsWith('multi_') ? '#FFFFFF' : primaryBtnText;
     const btnShadow = targetCfg.surface === 'aurora'
       ? `0 0 18px ${c.glow}`
       : (targetCfg.surface === 'bento' ? `0 4px 12px ${c.glow}` : 'none');
@@ -3961,7 +4031,7 @@
       activeBrandStop, isManualStop,
       brandHex, onBrandHex, brandContainerHex, onBrandContainerHex, brandTextHex, focusRingHex, controlOutline,
       secondaryHex, onSecondaryHex, secondaryContainerHex, onSecondaryContainerHex, textTertiary, outlineVariant,
-      brandGrads, multiGrads, activeGradCss, activeGradLabel, gMode, isContainerGrad, heroCardBg,
+      brandGrads, multiGrads, activeGradCss, activeGradLabel, gMode, isContainerGrad, heroCardBg, readableTextGradCss, accentBannerBg, accentBannerText,
       stageBg, surfaceBase, surfaceLow, surfaceContainer, surfaceHigh, surfaceVariant,
       cardBg, cardBackdrop, blurPx, subContainerBg, cardBorder, borderPx, borderCol, cardTopBorder, boxShadow,
       textMain, textMuted, badgeBg, badgeText, badgeBorder,
@@ -4214,9 +4284,9 @@
 
     // 顶部导航栏：当选了 immersive 沉浸式导航时，头部直通激活渐变底色
     const topHeaderHtml = isImmersive ? `
-      <div style="padding:8px 12px 10px;background:${s.activeGradCss};color:#FFFFFF;display:flex;align-items:center;justify-content:space-between;">
+      <div style="padding:8px 12px 10px;background:${s.accentBannerBg};color:${s.accentBannerText};display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:6px;">
-          <span style="padding:1.5px 6px;border-radius:999px;background:rgba(0,0,0,0.28);font-size:10.5px;font-weight:700;">← 沉浸式</span>
+          <span style="padding:1.5px 6px;border-radius:999px;background:rgba(0,0,0,0.28);color:#FFFFFF;font-size:10.5px;font-weight:700;">← 沉浸式</span>
           <span style="font-size:${Math.round(13.5 * s.scaleNum)}px;font-weight:800;">${s.t.appTitle}</span>
         </div>
         ${headerRightHtml}
@@ -4266,8 +4336,8 @@
       <div class="phone-frame" style="max-width:${isMobileVp ? '336px' : '100%'};width:100%;height:100%;background:${s.stageBg};color:${s.textMain};border:2.5px solid ${s.isDark ? '#313C47' : '#C5CDD9'};box-shadow:${s.boxShadow};">
         <div>
           <!-- 状态栏 -->
-          <div style="padding:5px 12px 3px;display:flex;align-items:center;justify-content:space-between;background:${isImmersive ? s.activeGradCss : s.surfaceBase};color:${isImmersive ? '#FFF' : s.textMuted};font-size:11px;">
-            <span style="font-weight:700;font-family:${s.numCss};color:${isImmersive ? '#FFF' : s.textMain};">9:41</span>
+          <div style="padding:5px 12px 3px;display:flex;align-items:center;justify-content:space-between;background:${isImmersive ? s.accentBannerBg : s.surfaceBase};color:${isImmersive ? s.accentBannerText : s.textMuted};font-size:11px;">
+            <span style="font-weight:700;font-family:${s.numCss};color:${isImmersive ? s.accentBannerText : s.textMain};">9:41</span>
             <span style="padding:1px 7px;border-radius:999px;background:${isImmersive ? 'rgba(0,0,0,0.25)' : s.surfaceLow};color:${isImmersive ? '#FFF' : s.textMain};font-size:10.5px;font-weight:600;">${platformBadgeText}</span>
             <span style="font-family:${s.numCss};">5G 100%</span>
           </div>
@@ -4374,7 +4444,7 @@
     const topNavHtml = `
       <div style="background:${s.isDark ? 'rgba(19,24,32,0.84)' : 'rgba(255,255,255,0.88)'};backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:${s.cardBorder};border-radius:${s.r.card};padding:10px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:${s.boxShadow};">
         <div style="display:flex;align-items:center;gap:10px;">
-          <span style="width:28px;height:28px;border-radius:${s.r.btn};background:${s.activeGradCss};color:#FFF;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">✦</span>
+          <span style="width:28px;height:28px;border-radius:${s.r.btn};background:${s.accentBannerBg};color:${s.accentBannerText};display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">✦</span>
           <span style="font-weight:800;font-size:15px;letter-spacing:-0.01em;font-family:${s.ef.css};">DesignSystem.cloud</span>
           <span style="font-size:11px;padding:2px 7px;border-radius:${s.r.badge};background:${s.badgeBg};color:${s.badgeText};font-weight:600;">${getNavInfo(targetCfg.platform, targetCfg.navStyle).cn}</span>
         </div>
@@ -4418,7 +4488,7 @@
           </div>
 
           <h1 style="font-size:${heroHeadlineFs};font-weight:800;line-height:1.24;letter-spacing:-0.02em;margin-bottom:10px;">
-            ${s.t.webHeroTitle1}<span style="background:${s.isContainerGrad ? s.brandGrads.primary : s.activeGradCss};-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${s.t.webHeroTitle2}</span>
+            ${s.t.webHeroTitle1}<span style="background:${s.readableTextGradCss};-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${s.t.webHeroTitle2}</span>
           </h1>
           <p style="font-size:${bodyFs};color:${s.textMuted};max-width:680px;line-height:1.6;margin-bottom:16px;">
             ${s.t.webHeroSub}
@@ -4520,7 +4590,7 @@
     const globalTopBarHtml = showTopGlobalNav ? `
       <div style="background:${s.isDark ? 'rgba(19,24,32,0.88)' : 'rgba(255,255,255,0.92)'};backdrop-filter:blur(16px);border:${s.cardBorder};border-radius:${s.r.card};padding:9px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:${s.boxShadow};">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <span style="padding:3px 9px;border-radius:${s.r.btn};background:${s.activeGradCss};color:#FFF;font-weight:800;font-size:12px;">⚡ SaaS Hub</span>
+          <span style="padding:3px 9px;border-radius:${s.r.btn};background:${s.accentBannerBg};color:${s.accentBannerText};font-weight:800;font-size:12px;">⚡ SaaS Hub</span>
           <span style="font-weight:800;font-size:13.5px;font-family:${s.ef.css};">${targetCfg.navStyle === 'dual_nav' ? '顶栏 + 侧栏复合导航架构 (Dual-Nav)' : '顶部粘性全局导航架构 (Top Portal)'}</span>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;">
             <span style="padding:3px 9px;border-radius:${s.r.btn};background:${s.badgeBg};color:${s.badgeText};">工作台总览</span>
@@ -4675,7 +4745,7 @@
     const topSplitBarHtml = (!isMobileVp && isTopSplit) ? `
       <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:9px 14px;display:flex;align-items:center;justify-content:space-between;box-shadow:${s.boxShadow};">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="padding:3px 9px;border-radius:${s.r.btn};background:${s.activeGradCss};color:#FFF;font-weight:800;font-size:12px;">📟 iPadOS Top-Split</span>
+          <span style="padding:3px 9px;border-radius:${s.r.btn};background:${s.accentBannerBg};color:${s.accentBannerText};font-weight:800;font-size:12px;">📟 iPadOS Top-Split</span>
           <span style="font-weight:800;font-size:13px;">顶部横向导航 + 左右主从双栏</span>
         </div>
         <div style="display:flex;gap:6px;font-size:12px;font-weight:700;">
@@ -4692,7 +4762,7 @@
           <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:12px 10px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:${s.boxShadow};">
             <div style="display:flex;flex-direction:column;gap:5px;font-size:${bodyFs};font-weight:700;">
               <div style="display:flex;align-items:center;gap:8px;padding:4px 8px 10px;border-bottom:1px solid ${s.borderCol};margin-bottom:4px;">
-                <span style="width:26px;height:26px;border-radius:${s.r.btn};background:${s.activeGradCss};color:#FFF;display:inline-flex;align-items:center;justify-content:center;">📟</span>
+                <span style="width:26px;height:26px;border-radius:${s.r.btn};background:${s.accentBannerBg};color:${s.accentBannerText};display:inline-flex;align-items:center;justify-content:center;">📟</span>
                 <span>展开侧边抽屉</span>
               </div>
               <div style="padding:7px 10px;border-radius:${s.r.btn};background:${s.badgeBg};color:${s.badgeText};">📋 主从巡检列表</div>
@@ -4706,7 +4776,7 @@
         leftNavRailOrDrawerHtml = `
           <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:14px 8px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;box-shadow:${s.boxShadow};">
             <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
-              <div style="width:36px;height:36px;border-radius:${s.r.btn};background:${s.activeGradCss};color:#FFF;display:flex;align-items:center;justify-content:center;font-weight:800;">📟</div>
+              <div style="width:36px;height:36px;border-radius:${s.r.btn};background:${s.accentBannerBg};color:${s.accentBannerText};display:flex;align-items:center;justify-content:center;font-weight:800;">📟</div>
               <div style="padding:8px 10px;border-radius:${s.r.btn};background:${s.badgeBg};color:${s.badgeText};font-size:11px;font-weight:700;text-align:center;">📋<br>列表</div>
               <div style="padding:8px 10px;border-radius:${s.r.btn};color:${s.textMuted};font-size:11px;text-align:center;">📐<br>画布</div>
               <div style="padding:8px 10px;border-radius:${s.r.btn};color:${s.textMuted};font-size:11px;text-align:center;">🎨<br>令牌</div>
@@ -4808,13 +4878,13 @@
 
         ${hasMod(targetCfg, 'kpi') ? `
         <!-- TV 巨幕主推横幅 -->
-        <div style="background:${isTvAmbient ? s.activeGradCss : s.heroCardBg};${s.cardBackdrop}color:${isTvAmbient ? '#FFF' : s.textMain};border:${s.cardBorder};border-radius:${s.r.card};padding:${isTvAmbient ? '28px 26px' : '20px 22px'};box-shadow:${s.boxShadow};display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div style="background:${isTvAmbient ? s.accentBannerBg : s.heroCardBg};${s.cardBackdrop}color:${isTvAmbient ? s.accentBannerText : s.textMain};border:${s.cardBorder};border-radius:${s.r.card};padding:${isTvAmbient ? '28px 26px' : '20px 22px'};box-shadow:${s.boxShadow};display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
           <div style="max-width:540px;">
             <span style="padding:3px 10px;border-radius:999px;background:${isTvAmbient ? 'rgba(0,0,0,0.4)' : s.badgeBg};color:${isTvAmbient ? '#FFF' : s.badgeText};font-size:11.5px;font-weight:800;">
               ${isTvAmbient ? '✦ FULLSCREEN IMMERSIVE HERO · 全屏沉浸巨幕流' : 'DOLBY VISION · 10-FOOT UI SPEC'}
             </span>
             <h2 style="font-size:${Math.round(23 * s.scaleNum)}px;font-weight:800;margin:8px 0 6px;">智能电视 / 车载大屏远场交互规范 (${getNavInfo(targetCfg.platform, targetCfg.navStyle).cn})</h2>
-            <p style="font-size:${Math.round(13 * s.scaleNum)}px;color:${isTvAmbient ? 'rgba(255,255,255,0.88)' : s.textMuted};line-height:1.55;margin-bottom:14px;">
+            <p style="font-size:${Math.round(13 * s.scaleNum)}px;color:${isTvAmbient ? s.accentBannerText : s.textMuted};opacity:${isTvAmbient ? '0.9' : '1'};line-height:1.55;margin-bottom:14px;">
               观看距离 2.5m–3m，正文字号放大 ≥1.5x，四周预留 5% 过扫描安全边距，遥控器焦点卡片具备高对比度发光外环 (${s.focusRingHex}) 与 1.05 倍微缩放反馈。
             </p>
             <div style="display:flex;gap:12px;">
@@ -4824,7 +4894,7 @@
           </div>
           <div style="text-align:right;font-family:${s.numCss};">
             <div style="font-size:11px;opacity:0.85;">HDMI 2.1 · 帧率稳定度</div>
-            <div style="font-size:${Math.round(30 * s.scaleNum)}px;font-weight:800;${isTvAmbient ? 'color:#FFF;' : s.heroNumStyle}">120.0 FPS</div>
+            <div style="font-size:${Math.round(30 * s.scaleNum)}px;font-weight:800;${isTvAmbient ? 'color:' + s.accentBannerText + ';' : s.heroNumStyle}">120.0 FPS</div>
           </div>
         </div>` : ''}
 
@@ -4920,7 +4990,7 @@
               <div style="font-weight:700;">brand</div>
               <div style="font-family:monospace;opacity:0.9;">${s.brandHex}</div>
             </div>
-            <div style="padding:7px 8px;border-radius:${s.r.badge};background:${s.onBrandHex};color:${s.brandHex};border:1px solid ${s.borderCol};">
+            <div style="padding:7px 8px;border-radius:${s.r.badge};background:${s.onBrandHex};color:${s.onBrandHex.toUpperCase() === '#FFFFFF' ? '#0B0E14' : '#FFFFFF'};border:1px solid ${s.borderCol};">
               <div style="font-weight:700;">onBrand</div>
               <div style="font-family:monospace;">${s.onBrandHex}</div>
             </div>
@@ -5444,6 +5514,14 @@ ${cssVarsBlock}
           "activeBrandStop": s.activeBrandStop,
           "activeBrandHex": s.brandHex,
           "activeOnBrandHex": s.onBrandHex,
+          "activeResolved": {
+            "brand": s.brandHex,
+            "onBrand": s.onBrandHex,
+            "brandContainer": s.brandContainerHex,
+            "onBrandContainer": s.onBrandContainerHex,
+            "brandText": s.brandTextHex,
+            "focusRing": s.focusRingHex
+          },
           "hex": s.c.hex,
           "rgb": `rgb(${r}, ${g}, ${b})`,
           "hsl": `hsl(${h}, ${hs}%, ${l}%)`,
