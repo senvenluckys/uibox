@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>全终端视觉风格与主题配置工作台 (App / 小程序 / 网站前端 / 管理后台 / 平板 / 桌面 / TV)</title>
   <style>
-    /* ==================== 本地字体库 (15款中英与数字设计师字体 · 100% 本地离线加载) ==================== */
+    /* ==================== 本地字体库 (15款中英与数字主流字体 · 100% 本地离线加载 `fonts/`) ==================== */
     @font-face {
       font-family: 'ManropeBrand';
       src: url('fonts/Manrope-Variable.ttf') format('truetype');
@@ -43,8 +43,8 @@
       font-display: swap;
     }
     @font-face {
-      font-family: 'BarlowCondensedLocal';
-      src: url('fonts/BarlowCondensed-Bold.woff2') format('woff2');
+      font-family: 'DDINLocal';
+      src: url('fonts/D-DIN-Bold.woff2') format('woff2');
       font-weight: 600 700;
       font-display: swap;
     }
@@ -67,6 +67,24 @@
       font-display: swap;
     }
     @font-face {
+      font-family: 'HarmonyOSSansLocal';
+      src: url('fonts/HarmonyOSSansSC-Medium.woff2') format('woff2');
+      font-weight: 400 700;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'MiSansLocal';
+      src: url('fonts/MiSans-Medium.woff2') format('woff2');
+      font-weight: 400 700;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'AlibabaPuHuiTiLocal';
+      src: url('fonts/AlibabaPuHuiTi-Medium.woff2') format('woff2');
+      font-weight: 400 700;
+      font-display: swap;
+    }
+    @font-face {
       font-family: 'NotoSerifSCLocal';
       src: url('fonts/NotoSerifSC-Bold.woff2') format('woff2');
       font-weight: 400 700;
@@ -79,22 +97,9 @@
       font-display: swap;
     }
     @font-face {
-      font-family: 'ZCOOLHuangYouLocal';
-      src: url('fonts/ZCOOLQingKeHuangYou-Regular.woff2') format('woff2');
-      font-weight: 400;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'ZCOOLKuaiLeLocal';
-      src: url('fonts/ZCOOLKuaiLe-Regular.woff2') format('woff2');
-      font-weight: 400;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'MaShanZhengLocal';
-      src: url('fonts/MaShanZheng-Regular.woff2') format('woff2');
-      font-weight: 400;
-      font-display: swap;
+      font-family: 'SystemLatinUI';
+      src: local('SF Pro Text'), local('.SFNS-Regular'), local('.AppleSystemUIFont'), local('Segoe UI Variable'), local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), local('Arial');
+      unicode-range: U+0000-024F, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
 
     /* ==================== 工作台自身深/浅/跟随系统主题变量（严格遵循「经典科技 Classic Tech」规范：Tech Blue #005FF0 + Slate 中性阶梯 + 1px 利落实线） ==================== */
@@ -147,6 +152,19 @@
       --wb-code-bg: #F8FAFC;
       --wb-scroll-thumb: #C5CDD9;
       --wb-scroll-track: #F1F5F9;
+    }
+
+    /* 严格遵循 docs/04-iconography.md 的全局圆角线性 SVG 图标体系 (24x24 viewBox, rounded cap/join, currentColor 颜色继承, RTL 方向镜像) */
+    .ds-svg {
+      display: inline-block;
+      vertical-align: -0.16em;
+      flex-shrink: 0;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.15s ease;
+    }
+    [dir="rtl"] .ds-svg.ds-rtl-mirror {
+      transform: scaleX(-1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -862,10 +880,10 @@
       color: #ffffff;
     }
 
-    /* 字体网格 (4列x2行紧凑对齐) */
+    /* 字体网格 (3列x3行紧凑对齐) */
     .font-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 4px;
     }
     @media (max-width: 520px) {
@@ -1484,6 +1502,7 @@
       <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
         <button class="action-btn" onclick="saveCurrentToHistory()">+ 暂存当前</button>
         <button class="action-btn" onclick="openImportModal()">📂 导入 JSON</button>
+        <button class="action-btn" onclick="downloadCssSpec()" title="直接下载 Web/H5/小程序即插即用的 CSS 变量文件 (.css)">📥 导出 CSS</button>
         <button class="action-btn" onclick="downloadJsonSpec()">📥 导出 Tokens JSON</button>
       </div>
     </div>
@@ -1580,11 +1599,30 @@
             <button class="color-dot" data-val="slate" style="background:#42505e" title="⑦ 岩石灰 Slate (600:#42505E)" onclick="selectPresetColor('slate')"></button>
           </div>
           <div style="display:flex;gap:4px;align-items:center;flex-shrink:0;">
-            <button class="picker-trigger-btn" id="btn-open-picker" onclick="openColorPickerModal()">
+            <button class="picker-trigger-btn" id="btn-open-picker" onclick="openColorPickerModal()" title="打开 36 色精选色板 + 14 种品牌/多色渐变色板 + 2D 拾色画布">
               <span id="custom-color-preview-dot" style="width:11px;height:11px;border-radius:999px;background:#005ff0;border:1px solid #fff;flex-shrink:0;"></span>
-              <span>🎨 24色/2D拾色</span>
+              <span>🎨 36色/渐变/拾色</span>
             </button>
             <button class="pill-btn" id="btn-carousel" onclick="toggleColorCarousel()">▶️ 轮播</button>
+          </div>
+        </div>
+
+        <!-- 扩展行业高频主题色快捷点选栏（无需进弹窗即可一键切换橙/金/粉/靛/青/棕等 12 款热门行业色） -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:4px;padding:3px 6px;border-radius:6px;background:var(--wb-sub-bg);border:1px solid var(--wb-border);">
+          <span style="font-size:9.5px;font-weight:700;color:var(--wb-muted);white-space:nowrap;">扩展色板:</span>
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;" id="grp-ext-brand">
+            <button class="color-dot" data-hex="#D97706" style="width:15px;height:15px;background:#D97706" title="琥珀流金 (#D97706)" onclick="applyCustomColorHex('#D97706','琥珀流金')"></button>
+            <button class="color-dot" data-hex="#EA580C" style="width:15px;height:15px;background:#EA580C" title="爱马仕橙 (#EA580C)" onclick="applyCustomColorHex('#EA580C','爱马仕橙')"></button>
+            <button class="color-dot" data-hex="#E11D48" style="width:15px;height:15px;background:#E11D48" title="魅惑玫红 (#E11D48)" onclick="applyCustomColorHex('#E11D48','魅惑玫红')"></button>
+            <button class="color-dot" data-hex="#DB2777" style="width:15px;height:15px;background:#DB2777" title="芭比亮粉 (#DB2777)" onclick="applyCustomColorHex('#DB2777','芭比亮粉')"></button>
+            <button class="color-dot" data-hex="#9333EA" style="width:15px;height:15px;background:#9333EA" title="丁香罗兰 (#9333EA)" onclick="applyCustomColorHex('#9333EA','丁香罗兰')"></button>
+            <button class="color-dot" data-hex="#4F46E5" style="width:15px;height:15px;background:#4F46E5" title="深邃靛蓝 (#4F46E5)" onclick="applyCustomColorHex('#4F46E5','深邃靛蓝')"></button>
+            <button class="color-dot" data-hex="#1D4ED8" style="width:15px;height:15px;background:#1D4ED8" title="克莱因蓝 (#1D4ED8)" onclick="applyCustomColorHex('#1D4ED8','克莱因蓝')"></button>
+            <button class="color-dot" data-hex="#06B6D4" style="width:15px;height:15px;background:#06B6D4" title="蒂芙尼青 (#06B6D4)" onclick="applyCustomColorHex('#06B6D4','蒂芙尼青')"></button>
+            <button class="color-dot" data-hex="#10B981" style="width:15px;height:15px;background:#10B981" title="薄荷清绿 (#10B981)" onclick="applyCustomColorHex('#10B981','薄荷清绿')"></button>
+            <button class="color-dot" data-hex="#9F1239" style="width:15px;height:15px;background:#9F1239" title="勃艮第酒红 (#9F1239)" onclick="applyCustomColorHex('#9F1239','勃艮第酒红')"></button>
+            <button class="color-dot" data-hex="#78350F" style="width:15px;height:15px;background:#78350F" title="暖咖美拉德 (#78350F)" onclick="applyCustomColorHex('#78350F','暖咖美拉德')"></button>
+            <button class="color-dot" data-hex="#B45309" style="width:15px;height:15px;background:#B45309" title="黑金古铜 (#B45309)" onclick="applyCustomColorHex('#B45309','黑金古铜')"></button>
           </div>
         </div>
 
@@ -1617,10 +1655,14 @@
         <div class="ctrl-row">
           <span class="ctrl-label">多色渐变:</span>
           <div class="seg-group seg-grid-4" id="grp-multiGradient">
-            <button class="seg-btn" data-val="aurora" onclick="setOpt('gradientMode','multi_aurora')">🌌 极光</button>
-            <button class="seg-btn" data-val="spectrum" onclick="setOpt('gradientMode','multi_spectrum')">🌈 全谱</button>
-            <button class="seg-btn" data-val="cool" onclick="setOpt('gradientMode','multi_cool')">❄️ 冷调</button>
-            <button class="seg-btn" data-val="warm" onclick="setOpt('gradientMode','multi_warm')">🔥 暖阳</button>
+            <button class="seg-btn" data-val="aurora" onclick="setOpt('gradientMode','multi_aurora')" title="极光四色 (Green→Teal→Sky→Violet)">🌌 极光</button>
+            <button class="seg-btn" data-val="spectrum" onclick="setOpt('gradientMode','multi_spectrum')" title="全谱四色 (Red→Violet→Blue→Teal)">🌈 全谱</button>
+            <button class="seg-btn" data-val="cool" onclick="setOpt('gradientMode','multi_cool')" title="冷调科技 (Sky→Blue→Violet)">❄️ 冷调</button>
+            <button class="seg-btn" data-val="warm" onclick="setOpt('gradientMode','multi_warm')" title="暖阳庆典 (Red→Amber→Gold)">🔥 暖阳</button>
+            <button class="seg-btn" data-val="sunset" onclick="setOpt('gradientMode','multi_sunset')" title="落日流金 (Rose→Orange→Gold)">🌅 落日</button>
+            <button class="seg-btn" data-val="sakura" onclick="setOpt('gradientMode','multi_sakura')" title="樱花霓虹 (Pink→Orchid→Indigo)">🌸 樱霓</button>
+            <button class="seg-btn" data-val="ocean" onclick="setOpt('gradientMode','multi_ocean')" title="深海流光 (Navy→Cyan→Mint)">🌊 深海</button>
+            <button class="seg-btn" data-val="cyber" onclick="setOpt('gradientMode','multi_cyber')" title="赛博紫晶 (Violet→Fuchsia→Sky)">💎 赛博</button>
           </div>
         </div>
 
@@ -1781,70 +1823,106 @@
             <button class="seg-btn" data-val="40" onclick="setOpt('iconSize','40')">40xxl</button>
           </div>
         </div>
+
+        <div class="ctrl-row">
+          <span class="ctrl-label" title="docs/04-iconography.md 矢量图标线宽 (默认随尺寸 1.25~2.5px 自动匹配，也可固定统一线宽)">图标线宽:</span>
+          <div class="seg-group seg-grid-6" id="grp-iconStroke">
+            <button class="seg-btn active" data-val="auto" onclick="setOpt('iconStroke','auto')" title="随图标尺寸 (12~40px) 自动等比匹配 1.25~2.5px 线宽">随尺寸</button>
+            <button class="seg-btn" data-val="1.25" onclick="setOpt('iconStroke','1.25')" title="1.25px 极细线性">1.25细</button>
+            <button class="seg-btn" data-val="1.5" onclick="setOpt('iconStroke','1.5')" title="1.5px 纤细 (规范基准下限)">1.5纤</button>
+            <button class="seg-btn" data-val="1.75" onclick="setOpt('iconStroke','1.75')" title="1.75px 轻盈现代">1.75轻</button>
+            <button class="seg-btn" data-val="2" onclick="setOpt('iconStroke','2')" title="2.0px 标准线宽 (24px 规范默认基准)">2.0标</button>
+            <button class="seg-btn" data-val="2.5" onclick="setOpt('iconStroke','2.5')" title="2.5px 醒目加粗 (适老化/TV大屏/强视觉)">2.5粗</button>
+          </div>
+        </div>
+
+        <div class="ctrl-row">
+          <span class="ctrl-label" title="docs/04-iconography.md 图标颜色策略：规范推荐功能入口与激活态跟随主色、普通装饰用正文次色、状态用语义色">图标颜色:</span>
+          <div class="seg-group seg-grid-3" id="grp-iconColorMode">
+            <button class="seg-btn active" data-val="semantic" onclick="setOpt('iconColorMode','semantic')" title="符合 docs/04 规范：入口/激活态跟随主色，普通未选中用中性次色，状态图标用功能语义色">✨ 规范分层(推荐)</button>
+            <button class="seg-btn" data-val="brand" onclick="setOpt('iconColorMode','brand')" title="强品牌感：所有功能入口、卡片标题、导航图标全部高亮跟随品牌主色">🎨 全跟主色(Brand)</button>
+            <button class="seg-btn" data-val="neutral" onclick="setOpt('iconColorMode','neutral')" title="极简克制：所有功能入口与导航图标统一跟随高对比正文黑/白，仅状态图标保留语义色">⚖️ 克制单色(Neutral)</button>
+          </div>
+        </div>
+
+        <div class="ctrl-row">
+          <span class="ctrl-label" title="docs/04-iconography.md 第5节 图标填充形态：纯线性 Outline / 双色调柔光 Duotone / 激活实心填充 Filled">图标形态:</span>
+          <div class="seg-group seg-grid-3" id="grp-iconStyle">
+            <button class="seg-btn active" data-val="outline" onclick="setOpt('iconStyle','outline')" title="标准纯线性描边图标 (fill=none)">✏️ 线性 Outline</button>
+            <button class="seg-btn" data-val="duotone" onclick="setOpt('iconStyle','duotone')" title="双色调图标：内部自带 18% 品牌半透明柔光填充 + 清晰外描边">🌗 双色 Duotone</button>
+            <button class="seg-btn" data-val="filled" onclick="setOpt('iconStyle','filled')" title="面性饱满填充图标 (适合强视觉/激活态突出)">⏹️ 实心 Filled</button>
+          </div>
+        </div>
       </div>
 
-      <!-- 04. 本地字体系统：8款中文字体 + 6款英文/西文字体 + 5款数字等宽字体 (全部已下载到 fonts/ 本地目录) -->
+      <!-- 04. 跨端字体排印系统：9款中文(3大系统原生+3大厂UI黑体+阅读/潮玩) + 7款西文UI(含原生SF/Roboto) + 6款等宽数字(含原生/D-DIN) -->
       <div class="sec-card" data-sec="font">
         <div class="sec-head">
-          <span><span class="step-badge">04</span>本地字体排印 (中文 / 英文UI / 数字)</span>
-          <span class="sec-hint">15款本地字体 `fonts/`</span>
+          <span><span class="step-badge">04</span>字体排印体系 (系统原生 / 大厂UI / 西文 / 数字)</span>
+          <span class="sec-hint">原生栈 + 15款本地 `fonts/`</span>
         </div>
 
         <div class="font-grid" id="grp-font">
-          <button class="font-chip active" data-val="pingfang" onclick="setOpt('font','pingfang')" style="font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;">
-            <span class="font-chip-name">1. 苹方/雅黑</span>
-            <span class="font-chip-tag">系统现代黑体</span>
+          <button class="font-chip active" data-val="pingfang" onclick="setOpt('font','pingfang')" style="font-family:'PingFang SC',-apple-system,BlinkMacSystemFont,'Heiti SC',sans-serif;" title="苹果 iOS / iPadOS / macOS 系统原生标准黑体 (零包体积首选)">
+            <span class="font-chip-name">1. 苹果苹方</span>
+            <span class="font-chip-tag">🍎 iOS/Mac原生</span>
           </button>
-          <button class="font-chip" data-val="notosans" onclick="setOpt('font','notosans')" style="font-family:'NotoSansSCLocal','PingFang SC',sans-serif;">
-            <span class="font-chip-name">2. 思源黑体</span>
-            <span class="font-chip-tag">Noto Sans本地</span>
+          <button class="font-chip" data-val="yahei" onclick="setOpt('font','yahei')" style="font-family:'Microsoft YaHei UI','Microsoft YaHei','PingFang SC',sans-serif;" title="Windows 10 / 11 桌面与 SaaS 管理后台系统原生标准黑体">
+            <span class="font-chip-name">2. 微软雅黑UI</span>
+            <span class="font-chip-tag">🪟 Win桌面原生</span>
           </button>
-          <button class="font-chip" data-val="smiley" onclick="setOpt('font','smiley')" style="font-family:'SmileySansBrand','PingFang SC',sans-serif;">
-            <span class="font-chip-name">3. 得意黑</span>
-            <span class="font-chip-tag">Smiley本地</span>
+          <button class="font-chip" data-val="notosans" onclick="setOpt('font','notosans')" style="font-family:'NotoSansSCLocal','Noto Sans CJK SC','Source Han Sans SC',sans-serif;" title="Android 原生系统标准黑体 & 本地 fonts/NotoSansSC-Bold.woff2">
+            <span class="font-chip-name">3. 思源黑体</span>
+            <span class="font-chip-tag">🤖 安卓原生/本地</span>
           </button>
-          <button class="font-chip" data-val="wenkai" onclick="setOpt('font','wenkai')" style="font-family:'LXGWWenKaiLocal','Kaiti SC',serif;">
-            <span class="font-chip-name">4. 霞鹜文楷</span>
-            <span class="font-chip-tag">WenKai本地</span>
+          <button class="font-chip" data-val="harmony" onclick="setOpt('font','harmony')" style="font-family:'HarmonyOSSansLocal','HarmonyOS Sans SC','PingFang SC',sans-serif;" title="华为 HarmonyOS 鸿蒙黑体 (本地 fonts/HarmonyOSSansSC-Medium.woff2 · 跨端 App/车机内嵌首选)">
+            <span class="font-chip-name">4. 鸿蒙黑体</span>
+            <span class="font-chip-tag">📱 Harmony本地</span>
           </button>
-          <button class="font-chip" data-val="notoserif" onclick="setOpt('font','notoserif')" style="font-family:'NotoSerifSCLocal','Songti SC',serif;">
-            <span class="font-chip-name">5. 思源宋体</span>
-            <span class="font-chip-tag">人文衬线本地</span>
+          <button class="font-chip" data-val="misans" onclick="setOpt('font','misans')" style="font-family:'MiSansLocal','MiSans','PingFang SC',sans-serif;" title="小米澎湃 HyperOS 几何黑体 (本地 fonts/MiSans-Medium.woff2 · 10字重免费商用)">
+            <span class="font-chip-name">5. 小米MiSans</span>
+            <span class="font-chip-tag">⚡ MiSans本地</span>
           </button>
-          <button class="font-chip" data-val="zcool_hy" onclick="setOpt('font','zcool_hy')" style="font-family:'ZCOOLHuangYouLocal','PingFang SC',sans-serif;">
-            <span class="font-chip-name">6. 站酷黄油</span>
-            <span class="font-chip-tag">潮酷圆黑本地</span>
+          <button class="font-chip" data-val="puhuiti" onclick="setOpt('font','puhuiti')" style="font-family:'AlibabaPuHuiTiLocal','Alibaba PuHuiTi 3.0','PingFang SC',sans-serif;" title="阿里巴巴普惠体 3.0 (本地 fonts/AlibabaPuHuiTi-Medium.woff2 · 淘宝/钉钉/小程序标配)">
+            <span class="font-chip-name">6. 阿里普惠体</span>
+            <span class="font-chip-tag">🛍️ 普惠体本地</span>
           </button>
-          <button class="font-chip" data-val="zcool_kl" onclick="setOpt('font','zcool_kl')" style="font-family:'ZCOOLKuaiLeLocal','PingFang SC',sans-serif;">
-            <span class="font-chip-name">7. 站酷快乐</span>
-            <span class="font-chip-tag">活力消费本地</span>
+          <button class="font-chip" data-val="notoserif" onclick="setOpt('font','notoserif')" style="font-family:'NotoSerifSCLocal','Songti SC','Noto Serif CJK SC',serif;" title="思源宋体 + 苹果原生华文宋体 Songti SC (本地 fonts/NotoSerifSC-Bold.woff2)">
+            <span class="font-chip-name">7. 思源/华文宋</span>
+            <span class="font-chip-tag">📖 阅读衬线本地</span>
           </button>
-          <button class="font-chip" data-val="mashanzheng" onclick="setOpt('font','mashanzheng')" style="font-family:'MaShanZhengLocal','Kaiti SC',serif;">
-            <span class="font-chip-name">8. 马善政楷</span>
-            <span class="font-chip-tag">国风毛笔本地</span>
+          <button class="font-chip" data-val="wenkai" onclick="setOpt('font','wenkai')" style="font-family:'LXGWWenKaiLocal','Kaiti SC','KaiTi',serif;" title="霞鹜文楷 + 苹果原生华文楷体 Kaiti SC (本地 fonts/LXGWWenKai-Regular.woff2)">
+            <span class="font-chip-name">8. 霞鹜/华文楷</span>
+            <span class="font-chip-tag">🖋️ 人文楷体本地</span>
+          </button>
+          <button class="font-chip" data-val="smiley" onclick="setOpt('font','smiley')" style="font-family:'SmileySansBrand','PingFang SC',sans-serif;" title="得意黑 Smiley Sans 窄斜体 (本地 fonts/SmileySans-Oblique.woff2 · 品牌标题/大促徽章)">
+            <span class="font-chip-name">9. 得意黑</span>
+            <span class="font-chip-tag">🔥 品牌斜黑本地</span>
           </button>
         </div>
 
         <div class="ctrl-row" style="margin-top:4px;">
           <span class="ctrl-label">🇺🇸 英文UI:</span>
-          <div class="seg-group seg-grid-6" id="grp-enFont">
-            <button class="seg-btn active" data-val="inter" onclick="setOpt('enFont','inter')" style="font-family:'InterLocal',sans-serif;">Inter</button>
-            <button class="seg-btn" data-val="manrope" onclick="setOpt('enFont','manrope')" style="font-family:'ManropeBrand',sans-serif;">Manrope</button>
-            <button class="seg-btn" data-val="jakarta" onclick="setOpt('enFont','jakarta')" style="font-family:'PlusJakartaLocal',sans-serif;">Jakarta</button>
-            <button class="seg-btn" data-val="dmsans" onclick="setOpt('enFont','dmsans')" style="font-family:'DMSansLocal',sans-serif;">DM Sans</button>
-            <button class="seg-btn" data-val="space" onclick="setOpt('enFont','space')" style="font-family:'SpaceGroteskLocal',sans-serif;">Space</button>
-            <button class="seg-btn" data-val="playfair" onclick="setOpt('enFont','playfair')" style="font-family:'PlayfairLocal',serif;">Playfair</button>
+          <div class="seg-group seg-grid-7" id="grp-enFont">
+            <button class="seg-btn" data-val="system_en" onclick="setOpt('enFont','system_en')" style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI Variable',Roboto,sans-serif;" title="系统原生西文：iOS/Mac 自动调用 SF Pro，Android 调用 Roboto，Win11 调用 Segoe UI Variable">🍏原生SF</button>
+            <button class="seg-btn active" data-val="inter" onclick="setOpt('enFont','inter')" style="font-family:'InterLocal',sans-serif;" title="Inter Variable (本地 fonts/Inter-Variable.woff2 · 全球 SaaS 第一标准西文字体)">Inter</button>
+            <button class="seg-btn" data-val="manrope" onclick="setOpt('enFont','manrope')" style="font-family:'ManropeBrand',sans-serif;" title="Manrope Variable (本地 fonts/Manrope-Variable.ttf · 本设计系统官方几何西文)">Manrope</button>
+            <button class="seg-btn" data-val="jakarta" onclick="setOpt('enFont','jakarta')" style="font-family:'PlusJakartaLocal',sans-serif;" title="Plus Jakarta Sans (本地 fonts/PlusJakartaSans-Variable.woff2 · 现代 AI 与消费级 SaaS)">Jakarta</button>
+            <button class="seg-btn" data-val="dmsans" onclick="setOpt('enFont','dmsans')" style="font-family:'DMSansLocal',sans-serif;" title="DM Sans (本地 fonts/DMSans-Variable.woff2 · 极简几何无衬线体)">DM Sans</button>
+            <button class="seg-btn" data-val="space" onclick="setOpt('enFont','space')" style="font-family:'SpaceGroteskLocal',sans-serif;" title="Space Grotesk (本地 fonts/SpaceGrotesk-Variable.woff2 · AI / Web3 先锋科技)">Space</button>
+            <button class="seg-btn" data-val="playfair" onclick="setOpt('enFont','playfair')" style="font-family:'PlayfairLocal',serif;" title="Playfair Display (本地 fonts/PlayfairDisplay-Variable.woff2 · 时尚奢品高对比衬线体)">Playfair</button>
           </div>
         </div>
 
         <div class="ctrl-row">
           <span class="ctrl-label">🔢 数字体:</span>
-          <div class="seg-group seg-grid-5" id="grp-numFont">
-            <button class="seg-btn active" data-val="manrope" onclick="setOpt('numFont','manrope')" style="font-family:'ManropeBrand',sans-serif;font-weight:700;">✨Manrope</button>
-            <button class="seg-btn" data-val="barlow" onclick="setOpt('numFont','barlow')" style="font-family:'BarlowCondensedLocal',sans-serif;font-weight:700;" title="Barlow Condensed / DIN 大促高密度数字体">🔥Barlow</button>
-            <button class="seg-btn" data-val="space" onclick="setOpt('numFont','space')" style="font-family:'SpaceGroteskLocal',sans-serif;font-weight:700;">🚀Space</button>
-            <button class="seg-btn" data-val="jetbrains" onclick="setOpt('numFont','jetbrains')" style="font-family:'JetBrainsMonoLocal',monospace;font-weight:700;">💻JetBrains</button>
-            <button class="seg-btn" data-val="inter" onclick="setOpt('numFont','inter')" style="font-family:'InterLocal',sans-serif;font-weight:700;">📐Inter</button>
+          <div class="seg-group seg-grid-6" id="grp-numFont">
+            <button class="seg-btn" data-val="system_num" onclick="setOpt('numFont','system_num')" style="font-family:-apple-system,'SF Pro Display','Segoe UI Variable',Roboto,sans-serif;font-weight:700;" title="系统原生等宽数字：直接调用苹果 SF Pro / 安卓 Roboto / Win11 Segoe UI 的 tabular-nums 等宽特性">🍏原生</button>
+            <button class="seg-btn active" data-val="manrope" onclick="setOpt('numFont','manrope')" style="font-family:'ManropeBrand',sans-serif;font-weight:700;" title="Manrope Tabular (本地 fonts/Manrope-Variable.ttf · 本设计系统规范默认几何等宽数字)">✨Manrope</button>
+            <button class="seg-btn" data-val="ddin" onclick="setOpt('numFont','ddin')" style="font-family:'DDINLocal','DIN Alternate','Bahnschrift',sans-serif;font-weight:700;" title="D-DIN 金融电商数字：本地 fonts/D-DIN-Bold.woff2 + iOS DIN Alternate + Win Bahnschrift">💰DIN金融</button>
+            <button class="seg-btn" data-val="inter" onclick="setOpt('numFont','inter')" style="font-family:'InterLocal',sans-serif;font-weight:700;" title="Inter Tabular (本地 fonts/Inter-Variable.woff2 · SaaS 仪表盘高辨识度标准数字)">📐Inter</button>
+            <button class="seg-btn" data-val="space" onclick="setOpt('numFont','space')" style="font-family:'SpaceGroteskLocal',sans-serif;font-weight:700;" title="Space Grotesk (本地 fonts/SpaceGrotesk-Variable.woff2 · AI 算力与科技看板数字)">🚀Space</button>
+            <button class="seg-btn" data-val="jetbrains" onclick="setOpt('numFont','jetbrains')" style="font-family:'JetBrainsMonoLocal','SF Mono','Cascadia Mono','Roboto Mono',monospace;font-weight:700;" title="JetBrains Mono (本地 fonts/JetBrainsMono-Variable.ttf · 代码与流水号等宽字体)">💻Mono</button>
           </div>
         </div>
       </div>
@@ -2004,6 +2082,7 @@
             <span style="font-size:12px;font-weight:800;color:var(--wb-text);white-space:nowrap;">💬 直接发给技术的零歧义交接话术（实时生成 · 可划选或一键复制）</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;">
+            <button class="action-btn" onclick="downloadCssSpec()" title="一键下载 Web/H5/小程序可直接引入的 CSS 变量文件 (design-tokens-v2.css)">📥 导出 CSS 变量 (.css)</button>
             <button class="action-btn" onclick="downloadJsonSpec()">📥 导出 Tokens JSON</button>
             <button id="copy-plain-btn" class="action-btn" style="font-weight:700;" onclick="copyPlainTalkOnly()">💬 仅复制口头话术</button>
             <button id="copy-btn" class="copy-btn" onclick="copyForTech()">📋 一键复制完整话术 + 技术契约单</button>
@@ -2032,13 +2111,22 @@
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #202830;">
       <div style="display:flex;align-items:center;gap:8px;">
         <span id="modal-live-swatch" style="width:22px;height:22px;border-radius:6px;background:#6a3de8;border:2px solid #fff;display:inline-block;"></span>
-        <span style="font-size:15px;font-weight:700;">🎨 调色工作台（7大官方色 + 24款行业色 + 自研2D拾色画布 + 实时11档色阶）</span>
+        <span style="font-size:15px;font-weight:700;">🎨 调色与渐变工作台（7大官方色 + 29款行业色 + 14种品牌/多色渐变 + 2D拾色画布）</span>
       </div>
       <button class="action-btn" onclick="closeColorPickerModal()">✓ 完成并关闭</button>
     </div>
 
-    <div style="font-size:12px;font-weight:600;color:#9faebf;margin-bottom:4px;">🌟 7 大官方规范主题色 & 24 款行业精选推荐色（点击即刻生成完整 11 档色板）：</div>
+    <div style="font-size:12px;font-weight:600;color:#9faebf;margin-bottom:4px;">🌟 7 大官方规范色 & 29 款全行业精选推荐色（共 36 色 · 点击即刻生成完整 11 档色板）：</div>
     <div class="swatch-grid" id="recommended-swatch-grid"></div>
+
+    <!-- 新增：弹窗内直接可视化选择 6 种品牌渐变 & 8 种跨色相多色渐变 -->
+    <div style="margin-top:10px;padding:8px 10px;border-radius:8px;background:#131820;border:1px solid #202830;">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#c5cdd9;margin-bottom:6px;flex-wrap:wrap;gap:4px;">
+        <span>🌈 <b>品牌同色系渐变 (6种) & 跨色相多色渐变 (8种) 可视化选择器</b>（点击立即切换预览）：</span>
+        <span id="modal-active-grad-label" style="font-size:11px;color:#7dc2ff;font-family:monospace;">当前：AppGradients.brand.primary</span>
+      </div>
+      <div id="modal-gradient-swatch-grid" style="display:grid;grid-template-columns:repeat(7, minmax(0,1fr));gap:6px;"></div>
+    </div>
 
     <!-- 弹窗内实时 11 档色阶预览条 -->
     <div style="margin-top:10px;">
@@ -2183,6 +2271,150 @@
   const CAROUSEL_KEYS = ['blue', 'violet', 'teal', 'green', 'sky', 'red', 'slate'];
   const SCALE_STOPS = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
 
+  // ==================== 严格遵循 docs/04-iconography.md 的内置圆角矢量 SVG 图标引擎 (24x24 视框 · Rounded 圆角端点 · currentColor 语义色继承 · 动态线宽 1.25~2.5px) ====================
+  const DS_SVG_PATHS = {
+    shield:    '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+    sun:       '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-17.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/>',
+    moon:      '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
+    monitor:   '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    ruler:     '<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z"/><path d="m14.5 12.5 2-2m-5-1 2-2m-5-1 2-2"/>',
+    dice:      '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/>',
+    scale:     '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1ZM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1ZM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
+    clipboard: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/>',
+    folder:    '<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+    download:  '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+    briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+    sparkle:   '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>',
+    leaf:      '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+    building:  '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+    cube:      '<path d="m21 16-9 5-9-5V8l9-5 9 5z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+    sliders:   '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="2" y1="14" x2="6" y2="14"/><line x1="10" y1="8" x2="14" y2="8"/><line x1="18" y1="16" x2="22" y2="16"/>',
+    bag:       '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+    barchart:  '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+    cup:       '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/>',
+    tv:        '<rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>',
+    userCheck: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/>',
+    palette:   '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.43-.18-.83-.44-1.12-.29-.29-.44-.65-.44-1.12a1.64 1.64 0 0 1 1.67-1.67h1.99c3.05 0 5.55-2.5 5.55-5.55C21.96 5.01 17.46 2 12 2z"/>',
+    rainbow:   '<path d="M22 17a10 10 0 0 0-20 0"/><path d="M6 17a6 6 0 0 1 12 0"/><path d="M10 17a2 2 0 0 1 4 0"/>',
+    refresh:   '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+    bulb:      '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/>',
+    lock:      '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    settings:  '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+    tag:       '<path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>',
+    zap:       '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+    wave:      '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
+    clock:     '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    hash:      '<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>',
+    rocket:    '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+    laptop:    '<path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/>',
+    phone:     '<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+    message:   '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+    tablet:    '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+    globe:     '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+    layers:    '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+    target:    '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    check:     '<polyline points="20 6 9 17 4 12"/>',
+    checkCircle:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+    inbox:     '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+    alert:     '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+    window:    '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>',
+    bell:      '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+    search:    '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    droplet:   '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+    diamond:   '<path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41l-7.59-7.59a2.41 2.41 0 0 0-3.41 0Z"/>',
+    trendUp:   '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+    calendar:  '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+    book:      '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+    card:      '<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>',
+    pen:       '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+    gamepad:   '<line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/>',
+    film:      '<rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/>',
+    music:     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    type:      '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>',
+    info:      '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+    xCircle:   '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+    arrowLeft: '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+    arrowRight:'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+    play:      '<polygon points="5 3 19 12 5 21 5 3"/>',
+    menu:      '<line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/>'
+  };
+
+  function dsIcon(name, sizePx = 14, strokeWidth = 2, extraClass = '', iconStyleMode = '') {
+    const body = DS_SVG_PATHS[name] || DS_SVG_PATHS.sparkle;
+    const mirrorCls = (name === 'arrowLeft' || name === 'arrowRight' || name === 'play') ? ' ds-rtl-mirror' : '';
+    const effStyle = iconStyleMode || (typeof cfg !== 'undefined' && cfg && cfg.iconStyle ? cfg.iconStyle : 'outline');
+    const fillAttr = effStyle === 'duotone'
+      ? 'fill="currentColor" fill-opacity="0.18"'
+      : (effStyle === 'filled' ? 'fill="currentColor" fill-opacity="0.34"' : 'fill="none"');
+    return `<svg class="ds-svg${mirrorCls}${extraClass ? ' ' + extraClass : ''}" width="${sizePx}" height="${sizePx}" viewBox="0 0 24 24" ${fillAttr} stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  }
+
+  const EMOJI_TO_SVG_NAME = {
+    '🛡️': 'shield', '🛡': 'shield', '☀️': 'sun', '☀': 'sun', '🌙': 'moon',
+    '🖥️': 'monitor', '🖥': 'monitor', '📐': 'ruler', '🎲': 'dice', '⚖️': 'scale', '⚖': 'scale',
+    '📋': 'clipboard', '📂': 'folder', '📥': 'download', '💼': 'briefcase',
+    '✦': 'sparkle', '✨': 'sparkle', '🌟': 'sparkle', '🌿': 'leaf', '🏢': 'building',
+    '🧊': 'cube', '🎛️': 'sliders', '🎛': 'sliders', '🛍️': 'bag', '🛍': 'bag',
+    '📊': 'barchart', '📈': 'trendUp', '🍵': 'cup', '📺': 'tv', '🧓': 'userCheck',
+    '🎨': 'palette', '🌈': 'rainbow', '🔄': 'refresh', '💡': 'bulb',
+    '🌌': 'sparkle', '❄️': 'cube', '❄': 'cube', '🔥': 'zap', '🔒': 'lock',
+    '⚙️': 'settings', '⚙': 'settings', '🏷️': 'tag', '🏷': 'tag', '⚡': 'zap',
+    '🌊': 'wave', '🐢': 'clock', '🔢': 'hash', '🚀': 'rocket', '💻': 'laptop',
+    '🍎': 'phone', '📱': 'phone', '📲': 'phone', '💬': 'message', '📟': 'tablet',
+    '🌐': 'globe', '🧬': 'layers', '🎯': 'target', '✅': 'checkCircle',
+    '📭': 'inbox', '⚠️': 'alert', '⚠': 'alert', '🪟': 'window', '🔔': 'bell',
+    '🔍': 'search', '💧': 'droplet', '🕒': 'clock', '⏳': 'clock', '💠': 'diamond',
+    '📅': 'calendar', '📚': 'book', '📦': 'cube', '💳': 'card', '✏️': 'pen', '✏': 'pen',
+    '🎮': 'gamepad', '🎬': 'film', '🎵': 'music', '🧱': 'layers', '🔤': 'type',
+    '📏': 'ruler', '🔣': 'sliders', '🌅': 'sun', '🌸': 'sparkle', '💎': 'diamond',
+    '🌗': 'layers', '⏹️': 'cube', '⏹': 'cube'
+  };
+  const EMOJI_REPLACE_REGEX = new RegExp(
+    Object.keys(EMOJI_TO_SVG_NAME).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
+    'g'
+  );
+
+  function replaceTextEmojisWithSvg(plainStr, sizePx = 13, strokeWidth = 2, iconStyleMode = '') {
+    EMOJI_REPLACE_REGEX.lastIndex = 0;
+    return String(plainStr).replace(EMOJI_REPLACE_REGEX, (m) => {
+      const iconKey = EMOJI_TO_SVG_NAME[m];
+      return iconKey ? dsIcon(iconKey, sizePx, strokeWidth, '', iconStyleMode) : m;
+    });
+  }
+
+  function upgradeHtmlEmojisToSvg(htmlStr, sizePx = 13, strokeWidth = 2, iconStyleMode = '') {
+    return String(htmlStr).replace(/>([^<]+)</g, (full, textContent) => {
+      EMOJI_REPLACE_REGEX.lastIndex = 0;
+      if (!EMOJI_REPLACE_REGEX.test(textContent)) return full;
+      return '>' + replaceTextEmojisWithSvg(textContent, sizePx, strokeWidth, iconStyleMode) + '<';
+    });
+  }
+
+  function upgradeDomEmojisToSvg(rootEl) {
+    if (!rootEl || !rootEl.querySelectorAll) return;
+    const targets = rootEl.querySelectorAll('button, .sec-head > span:first-child, .deck-head span, .cat-tab, .preset-title, .sem-pill span:first-child, .handoff-header span, .handoff-details summary span, .global-modal-card span, #scale11-role-explain, #hud-terminal-badge, #semantic-mode-badge, #modal-box span, #sheet-box span, #snackbar-text');
+    targets.forEach(el => {
+      if (el.id === 'plain-talk-box' || el.id === 'tech-spec-box') return;
+      if (el.children.length === 0) {
+        EMOJI_REPLACE_REGEX.lastIndex = 0;
+        if (EMOJI_REPLACE_REGEX.test(el.textContent)) {
+          el.innerHTML = replaceTextEmojisWithSvg(el.textContent, 12.5, 2, 'outline');
+        }
+      } else if (el.childNodes && el.childNodes.length > 0) {
+        Array.from(el.childNodes).forEach(node => {
+          if (node.nodeType === 3) {
+            EMOJI_REPLACE_REGEX.lastIndex = 0;
+            if (EMOJI_REPLACE_REGEX.test(node.nodeValue)) {
+              const span = document.createElement('span');
+              span.innerHTML = replaceTextEmojisWithSvg(node.nodeValue, 12.5, 2, 'outline');
+              if (node.parentNode) node.parentNode.replaceChild(span, node);
+            }
+          }
+        });
+      }
+    });
+  }
+
   // 严格取自 tokens/tokens.json 的 7 大官方品牌 11 档全色阶 (50 - 950)
   const OFFICIAL_PALETTES = {
     blue:   { '50':'#ECF8FF','100':'#D2EDFF','200':'#AEDDFF','300':'#7DC2FF','400':'#38A0FF','500':'#0480FC','600':'#005FF0','700':'#004BE2','800':'#0A3DAF','900':'#023674','950':'#0F2E52' },
@@ -2215,22 +2447,31 @@
     dark:  ['#38A0FF', '#29D3BB', '#9784FB', '#FFB020', '#FF504D', '#2AB7F8', '#70E400', '#768898']
   };
 
-  // tokens/tokens.json 中的 4 种跨色相多色渐变 (AppGradients.multicolorOf)
+  // tokens/tokens.json 中的 4 种官方多色渐变 + 4 种扩展行业多色渐变 (共 8 种跨色相多色渐变)
   const MULTICOLOR_GRADIENTS = {
     light: {
-      spectrum: { cn: '全谱四色 (multicolor.spectrum)', css: 'linear-gradient(135deg, #F92825 0%, #7C5BF6 35%, #0480FC 68%, #10B8A8 100%)' },
-      warm:     { cn: '暖阳庆典 (multicolor.warm)',     css: 'linear-gradient(135deg, #F92825 0%, #F5A100 52%, #FFD166 100%)' },
-      cool:     { cn: '冷调科技 (multicolor.cool)',     css: 'linear-gradient(135deg, #2AB7F8 0%, #0480FC 50%, #7C5BF6 100%)' },
-      aurora:   { cn: '极光四色 (multicolor.aurora)',   css: 'linear-gradient(135deg, #0ECC00 0%, #10B8A8 34%, #0AA4E9 67%, #7C5BF6 100%)' }
+      aurora:   { cn: '极光四色 (multicolor.aurora)',   shortCn: '🌌 极光', css: 'linear-gradient(135deg, #0ECC00 0%, #10B8A8 34%, #0AA4E9 67%, #7C5BF6 100%)' },
+      spectrum: { cn: '全谱四色 (multicolor.spectrum)', shortCn: '🌈 全谱', css: 'linear-gradient(135deg, #F92825 0%, #7C5BF6 35%, #0480FC 68%, #10B8A8 100%)' },
+      cool:     { cn: '冷调科技 (multicolor.cool)',     shortCn: '❄️ 冷调', css: 'linear-gradient(135deg, #2AB7F8 0%, #0480FC 50%, #7C5BF6 100%)' },
+      warm:     { cn: '暖阳庆典 (multicolor.warm)',     shortCn: '🔥 暖阳', css: 'linear-gradient(135deg, #F92825 0%, #F5A100 52%, #FFD166 100%)' },
+      sunset:   { cn: '落日流金 (multicolor.sunset)',   shortCn: '🌅 落日', css: 'linear-gradient(135deg, #E11D48 0%, #EA580C 52%, #F59E0B 100%)' },
+      sakura:   { cn: '樱花霓虹 (multicolor.sakura)',   shortCn: '🌸 樱霓', css: 'linear-gradient(135deg, #EC4899 0%, #A855F7 52%, #6366F1 100%)' },
+      ocean:    { cn: '深海流光 (multicolor.ocean)',    shortCn: '🌊 深海', css: 'linear-gradient(135deg, #1D4ED8 0%, #06B6D4 52%, #10B981 100%)' },
+      cyber:    { cn: '赛博紫晶 (multicolor.cyber)',    shortCn: '💎 赛博', css: 'linear-gradient(135deg, #7C3AED 0%, #D946EF 52%, #0EA5E9 100%)' }
     },
     dark: {
-      spectrum: { cn: '全谱四色 (multicolor.spectrum)', css: 'linear-gradient(135deg, #FF504D 0%, #9784FB 35%, #38A0FF 68%, #29D3BB 100%)' },
-      warm:     { cn: '暖阳庆典 (multicolor.warm)',     css: 'linear-gradient(135deg, #FF504D 0%, #FFB020 52%, #FFE1A8 100%)' },
-      cool:     { cn: '冷调科技 (multicolor.cool)',     css: 'linear-gradient(135deg, #76D1FC 0%, #38A0FF 50%, #9784FB 100%)' },
-      aurora:   { cn: '极光四色 (multicolor.aurora)',   css: 'linear-gradient(135deg, #70E400 0%, #29D3BB 34%, #2AB7F8 67%, #9784FB 100%)' }
+      aurora:   { cn: '极光四色 (multicolor.aurora)',   shortCn: '🌌 极光', css: 'linear-gradient(135deg, #70E400 0%, #29D3BB 34%, #2AB7F8 67%, #9784FB 100%)' },
+      spectrum: { cn: '全谱四色 (multicolor.spectrum)', shortCn: '🌈 全谱', css: 'linear-gradient(135deg, #FF504D 0%, #9784FB 35%, #38A0FF 68%, #29D3BB 100%)' },
+      cool:     { cn: '冷调科技 (multicolor.cool)',     shortCn: '❄️ 冷调', css: 'linear-gradient(135deg, #76D1FC 0%, #38A0FF 50%, #9784FB 100%)' },
+      warm:     { cn: '暖阳庆典 (multicolor.warm)',     shortCn: '🔥 暖阳', css: 'linear-gradient(135deg, #FF504D 0%, #FFB020 52%, #FFE1A8 100%)' },
+      sunset:   { cn: '落日流金 (multicolor.sunset)',   shortCn: '🌅 落日', css: 'linear-gradient(135deg, #FB7185 0%, #FB923C 52%, #FBBF24 100%)' },
+      sakura:   { cn: '樱花霓虹 (multicolor.sakura)',   shortCn: '🌸 樱霓', css: 'linear-gradient(135deg, #F472B6 0%, #C084FC 52%, #818CF8 100%)' },
+      ocean:    { cn: '深海流光 (multicolor.ocean)',    shortCn: '🌊 深海', css: 'linear-gradient(135deg, #60A5FA 0%, #22D3EE 52%, #34D399 100%)' },
+      cyber:    { cn: '赛博紫晶 (multicolor.cyber)',    shortCn: '💎 赛博', css: 'linear-gradient(135deg, #A78BFA 0%, #E879F9 52%, #38BDF8 100%)' }
     }
   };
 
+  // 7 大官方规范色 + 29 款全行业精选推荐色（共 36 色）
   const RECOMMENDED_SWATCHES = [
     { key: 'blue',   cn: '① 科技蓝 Blue',   hex: '#005FF0', official: true },
     { key: 'violet', cn: '② 极光紫 Violet', hex: '#6A3DE8', official: true },
@@ -2241,21 +2482,33 @@
     { key: 'slate',  cn: '⑦ 岩石灰 Slate',  hex: '#42505E', official: true },
     { key: 'custom', cn: '琥珀流金',        hex: '#D97706' },
     { key: 'custom', cn: '爱马仕橙',        hex: '#EA580C' },
+    { key: 'custom', cn: '活力暖橙',        hex: '#F97316' },
     { key: 'custom', cn: '魅惑玫红',        hex: '#E11D48' },
     { key: 'custom', cn: '芭比亮粉',        hex: '#DB2777' },
+    { key: 'custom', cn: '樱花柔粉',        hex: '#EC4899' },
+    { key: 'custom', cn: '洋红霓虹',        hex: '#C026D3' },
     { key: 'custom', cn: '丁香罗兰',        hex: '#9333EA' },
+    { key: 'custom', cn: '暗夜魅紫',        hex: '#7E22CE' },
     { key: 'custom', cn: '深邃靛蓝',        hex: '#4F46E5' },
+    { key: 'custom', cn: '星空蓝紫',        hex: '#4338CA' },
     { key: 'custom', cn: '克莱因蓝',        hex: '#1D4ED8' },
+    { key: 'custom', cn: '皇家深蓝',        hex: '#1E40AF' },
+    { key: 'custom', cn: '普鲁士蓝',        hex: '#0369A1' },
+    { key: 'custom', cn: '冰川蔚蓝',        hex: '#0284C7' },
     { key: 'custom', cn: '蒂芙尼青',        hex: '#06B6D4' },
+    { key: 'custom', cn: '深海青碧',        hex: '#0891B2' },
     { key: 'custom', cn: '薄荷清绿',        hex: '#10B981' },
+    { key: 'custom', cn: '祖母翠绿',        hex: '#059669' },
+    { key: 'custom', cn: '青柠鲜绿',        hex: '#16A34A' },
     { key: 'custom', cn: '牛油果绿',        hex: '#65A30D' },
+    { key: 'custom', cn: '莫兰迪绿',        hex: '#4D7C0F' },
     { key: 'custom', cn: '向日葵金',        hex: '#CA8A04' },
+    { key: 'custom', cn: '黑金古铜',        hex: '#B45309' },
     { key: 'custom', cn: '中国正红',        hex: '#B91C1C' },
-    { key: 'custom', cn: '勃艮第酒红',      hex: '#9F1239' },
-    { key: 'custom', cn: '普鲁士深蓝',      hex: '#0369A1' },
-    { key: 'custom', cn: '莫兰迪橄榄',      hex: '#4D7C0F' },
+    { key: 'custom', cn: '勃艮第红',        hex: '#9F1239' },
     { key: 'custom', cn: '暖咖美拉德',      hex: '#78350F' },
-    { key: 'custom', cn: '钛金青灰',        hex: '#334155' }
+    { key: 'custom', cn: '钛金青灰',        hex: '#334155' },
+    { key: 'custom', cn: '曜石碳黑',        hex: '#1E293B' }
   ];
 
   // 对齐 tokens/tokens.json 的 7 大官方主题色（含 semanticOverrides 对比度提级规则）
@@ -2793,12 +3046,57 @@
 
   // 图标尺寸标尺（严格对齐 tokens.json iconSizes 6档 与 docs/04-iconography.md）
   const ICON_SIZE_DESC = {
-    '12': { cn: '12px 极小 (xs)', px: 12, token: 'AppIconSize.xs (12px · 极小角标/状态指示点 · stroke 1.25px)' },
-    '16': { cn: '16px 紧凑 (sm)', px: 16, token: 'AppIconSize.sm (16px · 徽标/紧凑行内图标 · stroke 1.5px)' },
-    '20': { cn: '20px 标准 (md)', px: 20, token: 'AppIconSize.md (20px · 按钮/表单输入图标 · stroke 1.75px)' },
-    '24': { cn: '24px 导航 (lg)', px: 24, token: 'AppIconSize.lg (24px · 导航栏/工具栏主图标 · stroke 2.0px)' },
-    '32': { cn: '32px 醒目 (xl)', px: 32, token: 'AppIconSize.xl (32px · 金刚区/特性卡大图标 · stroke 2.25px)' },
-    '40': { cn: '40px 巨幕 (xxl)',px: 40, token: 'AppIconSize.xxl (40px · 空状态/首屏英雄块/TV端主图标 · stroke 2.5px)' }
+    '12': { cn: '12px 极小 (xs)', px: 12, stroke: 1.25, token: 'AppIconSize.xs (12px · 极小角标/状态指示点 · SVG 24x24 viewBox · stroke 1.25px · rounded)' },
+    '16': { cn: '16px 紧凑 (sm)', px: 16, stroke: 1.5,  token: 'AppIconSize.sm (16px · 徽标/紧凑行内图标 · SVG 24x24 viewBox · stroke 1.5px · rounded)' },
+    '20': { cn: '20px 标准 (md)', px: 20, stroke: 1.75, token: 'AppIconSize.md (20px · 按钮/表单输入图标 · SVG 24x24 viewBox · stroke 1.75px · rounded)' },
+    '24': { cn: '24px 导航 (lg)', px: 24, stroke: 2.0,  token: 'AppIconSize.lg (24px · 导航栏/工具栏主图标 · SVG 24x24 viewBox · stroke 2.0px · rounded)' },
+    '32': { cn: '32px 醒目 (xl)', px: 32, stroke: 2.25, token: 'AppIconSize.xl (32px · 金刚区/特性卡大图标 · SVG 24x24 viewBox · stroke 2.25px · rounded)' },
+    '40': { cn: '40px 巨幕 (xxl)',px: 40, stroke: 2.5,  token: 'AppIconSize.xxl (40px · 空状态/首屏英雄块/TV端主图标 · SVG 24x24 viewBox · stroke 2.5px · rounded)' }
+  };
+
+  const ICON_STROKE_DESC = {
+    'auto': { cn: '随尺寸自动缩放 (Auto 1.25~2.5px)', token: 'Proportional Stroke (12px->1.25, 16px->1.5, 20px->1.75, 24px->2.0, 32px->2.25, 40px->2.5)' },
+    '1.25': { cn: '1.25px 极细线性', token: 'Fixed Stroke 1.25px (Ultra-Light Hairline)' },
+    '1.5':  { cn: '1.5px 纤细基准',  token: 'Fixed Stroke 1.5px (Spec Lower Bound)' },
+    '1.75': { cn: '1.75px 轻盈现代', token: 'Fixed Stroke 1.75px (Balanced Modern)' },
+    '2':    { cn: '2.0px 标准线宽',  token: 'Fixed Stroke 2.0px (24px Default Baseline)' },
+    '2.5':  { cn: '2.5px 醒目加粗',  token: 'Fixed Stroke 2.5px (Bold / Elder / 10-Foot TV)' }
+  };
+
+  const ICON_COLOR_DESC = {
+    semantic: {
+      cn: '规范分层配色 (Semantic Auto · 推荐)',
+      plain: '图标着色遵循规范分层（功能入口与激活项跟随品牌主色、普通未选中与装饰图标用 textSecondary 次文案色、状态图标用成功/警告/错误语义色）',
+      token: 'Semantic Tiered Icon Coloring (docs/04-iconography.md: Action/Active -> brand/onBrandContainer, Decorative/Inactive -> textSecondary, Status -> on*Container/*Text)'
+    },
+    brand: {
+      cn: '全量跟随主色 (Brand Accent)',
+      plain: '图标着色采用全量品牌强调模式（金刚区、卡片标题、导航与功能入口图标统一跟随品牌主色 brand / brandText，仅状态图标保留语义色）',
+      token: 'Brand Accent Icon Coloring (All entry, header & nav icons -> brand/brandText; Status icons -> semantic status colors)'
+    },
+    neutral: {
+      cn: '克制中性单色 (Neutral Monochrome)',
+      plain: '图标着色采用极简克制单色模式（功能入口、卡片与导航图标统一跟随 textPrimary 正文高对比色，仅状态图标保留语义色）',
+      token: 'Neutral Monochrome Icon Coloring (All entry, header & nav icons -> textPrimary/textSecondary; Status icons -> semantic status colors)'
+    }
+  };
+
+  const ICON_STYLE_DESC = {
+    outline: {
+      cn: '纯线性描边 (Outline)',
+      plain: '纯线性矢量描边 (fill=none)',
+      token: 'Outline Vector Style (fill="none", stroke="currentColor")'
+    },
+    duotone: {
+      cn: '双色调柔光 (Duotone 18%)',
+      plain: '双色调图标（内部带 18% 半透明柔光填充 + 清晰实线外描边）',
+      token: 'Duotone Vector Style (fill="currentColor" fill-opacity="0.18", stroke="currentColor")'
+    },
+    filled: {
+      cn: '饱满实心面性 (Filled 34%)',
+      plain: '饱满面性填充（内部带 34% 高饱和填充 + 实线轮廓，突出激活态与视觉锚点）',
+      token: 'Filled Active Vector Style (fill="currentColor" fill-opacity="0.34", stroke="currentColor")'
+    }
   };
 
   function getNavInfo(platformKey, navVal) {
@@ -2833,14 +3131,14 @@
       tech: '静态注入选定主题色，无需暴露用户端换肤 UI'
     },
     picker7: {
-      cn: '内置「用户端 7 色自选换肤器」',
-      plain: '在页面或个人中心里给最终用户做一个【7色自由切换器】，让用户自己点选喜欢的主题色并自动记住',
-      tech: '接入 ThemeController.setBrand(AppBrand) + ThemePreferenceStore 本地持久化，渲染 7 色品牌选择器'
+      cn: '内置「用户端多色 & 渐变自选换肤器」',
+      plain: '在页面或个人中心里给最终用户做一个【7大官方色 + 热门扩展色 + 品牌/多色渐变切换器】，让用户自己点选喜欢的主题色或渐变并自动记住',
+      tech: '接入 ThemeController.setBrand(AppBrand) + setGradientMode + ThemePreferenceStore 本地持久化，渲染用户端多色与渐变选择器'
     },
     full_settings: {
-      cn: '内置「7色 + 明暗 + 密度字号」全套外观设置面板',
-      plain: '在产品设置页中，让用户可以自己切换【7种主题色 + 浅色/深色/跟随系统 + 界面紧凑度】',
-      tech: '完整挂载 ThemeController (setBrand / setMode / setDensity) + ThemePreferenceStore，提供用户端外观个性化设置页'
+      cn: '内置「多色 + 品牌/多色渐变 + 明暗/跟随系统 + 字号」全套外观面板',
+      plain: '在产品设置页中，让用户可以自己切换【官方/扩展主题色 + 品牌渐变/多色渐变 + 浅色/深色/跟随系统 + 字号大小】',
+      tech: '完整挂载 ThemeController (setBrand / setGradient / setMode[light|dark|system] / setScale) + ThemePreferenceStore，提供用户端全套外观设置页'
     }
   };
 
@@ -2888,35 +3186,38 @@
     dots:  { cn: '矩阵点阵底 (16px Dots)', token: '16px Radial Dot Matrix Backdrop' }
   };
 
-  // 8 款本地/常用中文字体 (已下载到 fonts/ 目录)
+  // 9 款跨端中文主流字体体系（涵盖 iOS/Win/Android 原生 + 鸿蒙/小米/阿里大厂本地 UI 黑体 + 阅读衬线/楷体 + 品牌斜黑）
   const FONT_DESC = {
-    pingfang:    { cn: '苹方 / 微软雅黑',      file: '系统内置 (PingFang SC / Microsoft YaHei)', token: 'AppTypography.fontFamilyFallback (PingFang SC / Microsoft YaHei)', css: '"PingFang SC", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif' },
-    notosans:    { cn: '思源黑体 (本地)',      file: 'fonts/NotoSansSC-Bold.woff2',              token: 'Noto Sans SC (本地 fonts/NotoSansSC-Bold.woff2)',                 css: '"NotoSansSCLocal", "Noto Sans SC", "PingFang SC", sans-serif' },
-    smiley:      { cn: '得意黑 Smiley (本地)', file: 'fonts/SmileySans-Oblique.woff2',           token: 'AppBrandCjk (本地 fonts/SmileySans-Oblique.woff2)',               css: '"SmileySansBrand", "PingFang SC", sans-serif' },
-    wenkai:      { cn: '霞鹜文楷 (本地)',      file: 'fonts/LXGWWenKai-Regular.woff2',           token: 'LXGW WenKai 霞鹜文楷 (本地 fonts/LXGWWenKai-Regular.woff2)',      css: '"LXGWWenKaiLocal", "Kaiti SC", "STKaiti", serif' },
-    notoserif:   { cn: '思源宋体 (本地)',      file: 'fonts/NotoSerifSC-Bold.woff2',             token: 'Noto Serif SC 思源宋体 (本地 fonts/NotoSerifSC-Bold.woff2)',      css: '"NotoSerifSCLocal", "Songti SC", "STSong", serif' },
-    zcool_hy:    { cn: '站酷庆科黄油体 (本地)',file: 'fonts/ZCOOLQingKeHuangYou-Regular.woff2',  token: 'ZCOOL QingKe HuangYou (本地 fonts/ZCOOLQingKeHuangYou-Regular.woff2)', css: '"ZCOOLHuangYouLocal", "PingFang SC", sans-serif' },
-    zcool_kl:    { cn: '站酷快乐体 (本地)',    file: 'fonts/ZCOOLKuaiLe-Regular.woff2',          token: 'ZCOOL KuaiLe 站酷快乐体 (本地 fonts/ZCOOLKuaiLe-Regular.woff2)',  css: '"ZCOOLKuaiLeLocal", "PingFang SC", sans-serif' },
-    mashanzheng: { cn: '马善政毛笔楷书 (本地)',file: 'fonts/MaShanZheng-Regular.woff2',          token: 'Ma Shan Zheng 马善政楷书 (本地 fonts/MaShanZheng-Regular.woff2)', css: '"MaShanZhengLocal", "Kaiti SC", serif' }
+    pingfang:  { cn: '苹果苹方 (PingFang SC)',        file: '系统原生 (iOS / iPadOS / macOS)',                   token: 'Apple System CJK ("PingFang SC", "Heiti SC")',                            css: '"PingFang SC", -apple-system, BlinkMacSystemFont, "Heiti SC", "Microsoft YaHei UI", sans-serif' },
+    yahei:     { cn: '微软雅黑 UI (YaHei UI)',        file: '系统原生 (Windows 10 / 11)',                        token: 'Windows System CJK ("Microsoft YaHei UI", "Microsoft YaHei")',            css: '"Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", sans-serif' },
+    notosans:  { cn: '思源黑体 (Noto Sans SC)',       file: 'fonts/NotoSansSC-Bold.woff2 + 安卓原生',            token: 'Android System / Noto Sans SC (本地 fonts/NotoSansSC-Bold.woff2)',        css: '"NotoSansSCLocal", "Noto Sans CJK SC", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", sans-serif' },
+    harmony:   { cn: '鸿蒙黑体 (HarmonyOS Sans)',     file: 'fonts/HarmonyOSSansSC-Medium.woff2',               token: 'HarmonyOS Sans SC (本地 fonts/HarmonyOSSansSC-Medium.woff2)',             css: '"HarmonyOSSansLocal", "HarmonyOS Sans SC", "HarmonyOS Sans", "PingFang SC", sans-serif' },
+    misans:    { cn: '小米兰亭 (MiSans HyperOS)',     file: 'fonts/MiSans-Medium.woff2',                        token: 'MiSans Global (本地 fonts/MiSans-Medium.woff2)',                          css: '"MiSansLocal", "MiSans", "Xiaomi LanTing", "PingFang SC", sans-serif' },
+    puhuiti:   { cn: '阿里巴巴普惠体 3.0',            file: 'fonts/AlibabaPuHuiTi-Medium.woff2',                token: 'Alibaba PuHuiTi 3.0 (本地 fonts/AlibabaPuHuiTi-Medium.woff2)',            css: '"AlibabaPuHuiTiLocal", "Alibaba PuHuiTi 3.0", "Alibaba PuHuiTi", "PingFang SC", sans-serif' },
+    notoserif: { cn: '思源宋体 / 华文宋 (Songti)',    file: 'fonts/NotoSerifSC-Bold.woff2 + 苹果 Songti SC',    token: 'Songti SC / Noto Serif SC (本地 fonts/NotoSerifSC-Bold.woff2)',           css: '"NotoSerifSCLocal", "Songti SC", "Noto Serif CJK SC", "STSong", serif' },
+    wenkai:    { cn: '霞鹜文楷 / 华文楷 (Kaiti)',     file: 'fonts/LXGWWenKai-Regular.woff2 + 苹果 Kaiti SC',   token: 'Kaiti SC / LXGW WenKai (本地 fonts/LXGWWenKai-Regular.woff2)',            css: '"LXGWWenKaiLocal", "Kaiti SC", "STKaiti", "KaiTi", serif' },
+    smiley:    { cn: '得意黑 Smiley (潮流窄斜黑)',    file: 'fonts/SmileySans-Oblique.woff2',                    token: 'AppBrandCjk Smiley Sans (本地 fonts/SmileySans-Oblique.woff2)',           css: '"SmileySansBrand", "PingFang SC", sans-serif' }
   };
 
-  // 6 款本地英文/西文 UI 设计师字体 (全部已下载到 fonts/ 目录)
+  // 7 款英文/西文 UI 字体体系 (含系统原生 SF Pro / Roboto / Segoe UI + 6 款本地设计师字体)
   const EN_FONT_DESC = {
-    inter:    { cn: 'Inter (UI首选)',        file: 'fonts/Inter-Variable.woff2',           token: 'Inter Variable (本地 fonts/Inter-Variable.woff2)',                   css: '"InterLocal"' },
-    manrope:  { cn: 'Manrope (规范西文)',    file: 'fonts/Manrope-Variable.ttf',           token: 'AppBrandLatin Manrope (本地 fonts/Manrope-Variable.ttf)',            css: '"ManropeBrand"' },
-    jakarta:  { cn: 'Plus Jakarta Sans',     file: 'fonts/PlusJakartaSans-Variable.woff2', token: 'Plus Jakarta Sans (本地 fonts/PlusJakartaSans-Variable.woff2)',      css: '"PlusJakartaLocal"' },
-    dmsans:   { cn: 'DM Sans (几何亲和)',    file: 'fonts/DMSans-Variable.woff2',          token: 'DM Sans Variable (本地 fonts/DMSans-Variable.woff2)',                css: '"DMSansLocal"' },
-    space:    { cn: 'Space Grotesk (AI极客)',file: 'fonts/SpaceGrotesk-Variable.woff2',    token: 'Space Grotesk Variable (本地 fonts/SpaceGrotesk-Variable.woff2)',    css: '"SpaceGroteskLocal"' },
-    playfair: { cn: 'Playfair Display (衬线)',file: 'fonts/PlayfairDisplay-Variable.woff2',token: 'Playfair Display Variable (本地 fonts/PlayfairDisplay-Variable.woff2)', css: '"PlayfairLocal"' }
+    system_en: { cn: 'SF Pro / Roboto / Segoe (系统原生)', file: '系统内置 (iOS SF Pro / Android Roboto / Win Segoe UI)', token: 'System Native Latin (-apple-system, "SF Pro Text", "Segoe UI Variable", Roboto)', css: '"SystemLatinUI", "SF Pro Text", "SF Pro Display", "Segoe UI Variable", "Segoe UI", Roboto' },
+    inter:     { cn: 'Inter (全球 SaaS 首选)',             file: 'fonts/Inter-Variable.woff2',           token: 'Inter Variable (本地 fonts/Inter-Variable.woff2)',                        css: '"InterLocal"' },
+    manrope:   { cn: 'Manrope (规范几何西文)',             file: 'fonts/Manrope-Variable.ttf',           token: 'AppBrandLatin Manrope (本地 fonts/Manrope-Variable.ttf)',                 css: '"ManropeBrand"' },
+    jakarta:   { cn: 'Plus Jakarta Sans (现代AI)',         file: 'fonts/PlusJakartaSans-Variable.woff2', token: 'Plus Jakarta Sans (本地 fonts/PlusJakartaSans-Variable.woff2)',           css: '"PlusJakartaLocal"' },
+    dmsans:    { cn: 'DM Sans (几何亲和)',                 file: 'fonts/DMSans-Variable.woff2',          token: 'DM Sans Variable (本地 fonts/DMSans-Variable.woff2)',                     css: '"DMSansLocal"' },
+    space:     { cn: 'Space Grotesk (先锋极客)',           file: 'fonts/SpaceGrotesk-Variable.woff2',    token: 'Space Grotesk Variable (本地 fonts/SpaceGrotesk-Variable.woff2)',         css: '"SpaceGroteskLocal"' },
+    playfair:  { cn: 'Playfair Display (奢品衬线)',        file: 'fonts/PlayfairDisplay-Variable.woff2', token: 'Playfair Display Variable (本地 fonts/PlayfairDisplay-Variable.woff2)',   css: '"PlayfairLocal"' }
   };
 
-  // 5 款本地数字与金额专用字体 (tabular-nums 对齐，全部已下载到 fonts/ 目录)
+  // 6 款数字与金额专用等宽字体 (强制开启 tabular-nums 对齐)
   const NUM_FONT_DESC = {
-    manrope:   { cn: 'Manrope (规范数字)',       file: 'fonts/Manrope-Variable.ttf',         token: 'Manrope Variable Tabular (本地 fonts/Manrope-Variable.ttf)',           css: '"ManropeBrand", sans-serif' },
-    barlow:    { cn: 'DIN / Barlow (金融大促)', file: 'fonts/BarlowCondensed-Bold.woff2',   token: 'Barlow Condensed / DIN Bold (本地 fonts/BarlowCondensed-Bold.woff2)',  css: '"BarlowCondensedLocal", "DIN Alternate", sans-serif' },
-    space:     { cn: 'Space Grotesk (科技数字)', file: 'fonts/SpaceGrotesk-Variable.woff2',  token: 'Space Grotesk Tabular (本地 fonts/SpaceGrotesk-Variable.woff2)',       css: '"SpaceGroteskLocal", sans-serif' },
-    jetbrains: { cn: 'JetBrains Mono (等宽)',    file: 'fonts/JetBrainsMono-Variable.ttf',   token: 'JetBrains Mono Variable (本地 fonts/JetBrainsMono-Variable.ttf)',      css: '"JetBrainsMonoLocal", monospace' },
-    inter:     { cn: 'Inter Tabular (标准数字)', file: 'fonts/Inter-Variable.woff2',         token: 'Inter Tabular Numerals (本地 fonts/Inter-Variable.woff2)',             css: '"InterLocal", sans-serif' }
+    system_num: { cn: 'SF Pro / Roboto / Segoe (原生等宽数字)', file: '系统内置 (tabular-nums)',           token: 'System Native Tabular Numerals (SF Pro / Roboto / Segoe UI)',             css: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable", Roboto, sans-serif' },
+    manrope:    { cn: 'Manrope Tabular (规范默认数字)',         file: 'fonts/Manrope-Variable.ttf',         token: 'Manrope Variable Tabular (本地 fonts/Manrope-Variable.ttf)',              css: '"ManropeBrand", sans-serif' },
+    ddin:       { cn: 'D-DIN / DIN Alternate (金融电商)',       file: 'fonts/D-DIN-Bold.woff2 + iOS DIN Alternate + Win Bahnschrift', token: 'D-DIN Pro / DIN Alternate / Bahnschrift (本地 fonts/D-DIN-Bold.woff2)', css: '"DDINLocal", "DIN Alternate", "Bahnschrift", "D-DIN", sans-serif' },
+    inter:      { cn: 'Inter Tabular (SaaS 标准数字)',          file: 'fonts/Inter-Variable.woff2',         token: 'Inter Tabular Numerals (本地 fonts/Inter-Variable.woff2)',                css: '"InterLocal", sans-serif' },
+    space:      { cn: 'Space Grotesk (AI 算力数字)',            file: 'fonts/SpaceGrotesk-Variable.woff2',  token: 'Space Grotesk Tabular (本地 fonts/SpaceGrotesk-Variable.woff2)',          css: '"SpaceGroteskLocal", sans-serif' },
+    jetbrains:  { cn: 'JetBrains / SF Mono (代码流水号)',       file: 'fonts/JetBrainsMono-Variable.ttf',   token: 'JetBrains Mono / SF Mono / Cascadia Mono (本地 fonts/JetBrainsMono-Variable.ttf)', css: '"JetBrainsMonoLocal", "SF Mono", "Cascadia Mono", "Roboto Mono", monospace' }
   };
 
   // 多语言完整词典 (简中 zh-CN / 繁中 zh-TW / 英文长文案 en，所有键名 100% 统一)
@@ -2932,7 +3233,7 @@
       formLabel: '表单输入契约', hotReload: '实时热更新',
       webHeroTag: '跨端设计系统 Tokens v2.0',
       webHeroTitle1: '一套设计规范，驱动 ', webHeroTitle2: 'App、小程序、网站前端与管理后台',
-      webHeroSub: '内置 7 大官方主题色 × 11 档全色阶 (50–950)，支持任意自定义颜色动态推导 11 档色板，5 种品牌渐变与 4 种多色渐变即插即用，100% 满足 WCAG AA 无障碍对比度契约。',
+      webHeroSub: '内置 7 大官方主题色 + 29 款扩展行业色 × 11 档全色阶 (50–950)，支持任意自定义颜色动态推导 11 档色板，5 种品牌渐变与 8 种多色渐变即插即用，100% 满足 WCAG AA 无障碍对比度契约。',
       adminTitle: '企业级多端发布与数据监控中心',
       tabletTitle: '平板主从分栏工作台 (Master-Detail)',
       tvTitle: 'TV 巨幕影院首屏',
@@ -2951,7 +3252,7 @@
       formLabel: '表單輸入契約', hotReload: '即時熱更新',
       webHeroTag: '跨端設計系統 Tokens v2.0',
       webHeroTitle1: '一套設計規範，驅動 ', webHeroTitle2: 'App、小程序、網站前端與管理後台',
-      webHeroSub: '內建 7 大官方主題色 × 11 檔全色階 (50–950)，支援任意自訂顏色動態推導 11 檔色板，5 種品牌漸層與 4 種多色漸層即插即用，100% 符合 WCAG AA 無障礙對比度契約。',
+      webHeroSub: '內建 7 大官方主題色 + 29 款擴展行業色 × 11 檔全色階 (50–950)，支援任意自訂顏色動態推導 11 檔色板，5 種品牌漸層與 8 種多色漸層即插即用，100% 符合 WCAG AA 無障礙對比度契約。',
       adminTitle: '企業級多端發佈與數據監控中心',
       tabletTitle: '平板主從分欄工作台 (Master-Detail)',
       tvTitle: 'TV 巨幕影院首屏',
@@ -2970,7 +3271,7 @@
       formLabel: 'Form Input Contract', hotReload: 'Live Hot-Reload',
       webHeroTag: 'Cross-Platform Design Tokens v2.0',
       webHeroTitle1: 'One Design System Powering ', webHeroTitle2: 'Mobile Apps, Web Portals, Tablets & Smart TVs',
-      webHeroSub: 'Built-in 7 official brand palettes × 11 stops (50–950), dynamic 11-stop derivation for any custom color, 5 brand gradients + 4 multicolor gradients, and strict WCAG AA contrast compliance.',
+      webHeroSub: 'Built-in 7 official brand palettes + 29 industry swatches × 11 stops (50–950), dynamic 11-stop derivation for any custom color, 5 brand gradients + 8 multicolor gradients, and strict WCAG AA contrast compliance.',
       adminTitle: 'Enterprise Multi-Platform Release & Telemetry Console',
       tabletTitle: 'Tablet Adaptive Split-View (Master-Detail)',
       tvTitle: 'Smart TV 10-Foot Hub',
@@ -3001,6 +3302,9 @@
     compState: 'default',
     motionPreset: 'normal',
     iconSize: '24',
+    iconStroke: 'auto',
+    iconColorMode: 'semantic',
+    iconStyle: 'outline',
     font: 'pingfang',
     enFont: 'inter',
     numFont: 'manrope',
@@ -3084,7 +3388,7 @@
     const btn = document.getElementById('btn-layout-mode');
     if (splitEl) splitEl.classList.toggle('stacked-mode', isStackedLayout);
     document.body.classList.toggle('stacked-page-scroll', isStackedLayout);
-    if (btn) btn.textContent = isStackedLayout ? '📐 左右分栏' : '📐 上下通栏';
+    if (btn) btn.innerHTML = replaceTextEmojisWithSvg(isStackedLayout ? '📐 左右分栏' : '📐 上下通栏', 12.5, 2);
   }
 
   // 切换焦点环 / 减弱动态 / RTL 镜像
@@ -3323,16 +3627,23 @@
       cfg.customHex = randHex;
       cfg.customColorName = `灵感随机色 (${randHex})`;
     } else {
-      const pickedKey = pick(CAROUSEL_KEYS);
-      cfg.brand = pickedKey;
-      cfg.customHex = COLORS[pickedKey].hex;
-      cfg.customColorName = COLORS[pickedKey].cn;
+      const pickedSw = pick(RECOMMENDED_SWATCHES);
+      if (pickedSw.official) {
+        cfg.brand = pickedSw.key;
+        cfg.customHex = COLORS[pickedSw.key].hex;
+        cfg.customColorName = COLORS[pickedSw.key].cn;
+      } else {
+        cfg.brand = 'custom';
+        cfg.customHex = pickedSw.hex;
+        cfg.customColorName = pickedSw.cn;
+      }
     }
 
-    cfg.gradientMode = pick(['none', 'brand_primary', 'brand_strong', 'brand_subtle', 'brand_glow', 'brand_surface', 'multi_aurora', 'multi_spectrum', 'multi_cool', 'multi_warm']);
+    cfg.gradientMode = pick(['none', 'brand_primary', 'brand_strong', 'brand_subtle', 'brand_glow', 'brand_surface', 'multi_aurora', 'multi_spectrum', 'multi_cool', 'multi_warm', 'multi_sunset', 'multi_sakura', 'multi_ocean', 'multi_cyber']);
     cfg.mode = pick(['light', 'dark']);
     cfg.radius = pick(['0', '4', '8', '12', '16', '24', '999']);
     cfg.elevation = pick(['e0', 'e1', 'e2', 'e3']);
+    cfg.iconStyle = pick(['outline', 'duotone', 'filled']);
     cfg.font = pick(Object.keys(FONT_DESC));
     cfg.enFont = pick(Object.keys(EN_FONT_DESC));
     cfg.numFont = pick(Object.keys(NUM_FONT_DESC));
@@ -3353,6 +3664,9 @@
     cfg.compState = 'default';
     cfg.motionPreset = 'normal';
     cfg.iconSize = '24';
+    cfg.iconStroke = 'auto';
+    cfg.iconColorMode = 'semantic';
+    cfg.iconStyle = 'outline';
     cfg.activeModules = ['kpi', 'theme', 'chart', 'form', 'list'];
     cfg.lang = 'zh-CN';
     cfg.rtl = false;
@@ -3392,21 +3706,21 @@
     } else if (name === 'minimal') {
       Object.assign(cfg, { surface: 'sharp', brand: 'slate', customHex: '#42505E', gradientMode: 'none', mode: 'light', radius: '0', borderWidth: '1', elevation: 'e0', blur: '0', backdrop: 'grid', density: 'compact', font: 'notosans', enFont: 'inter', numFont: 'jetbrains', scale: '1' });
     } else if (name === 'stripe') {
-      Object.assign(cfg, { surface: 'stripe', brand: 'teal', customHex: '#0B766E', gradientMode: 'brand_strong', mode: 'light', radius: '8', borderWidth: '1', elevation: 'e1', blur: '0', backdrop: 'plain', density: 'standard', font: 'pingfang', enFont: 'jakarta', numFont: 'barlow', scale: '1' });
+      Object.assign(cfg, { surface: 'stripe', brand: 'teal', customHex: '#0B766E', gradientMode: 'brand_strong', mode: 'light', radius: '8', borderWidth: '1', elevation: 'e1', blur: '0', backdrop: 'plain', density: 'standard', font: 'pingfang', enFont: 'jakarta', numFont: 'ddin', scale: '1' });
     } else if (name === 'glass') {
       Object.assign(cfg, { surface: 'glass', brand: 'sky', customHex: '#036AA0', gradientMode: 'multi_cool', mode: 'light', radius: '24', borderWidth: '1', elevation: 'e2', blur: '16', backdrop: 'dots', density: 'standard', font: 'pingfang', enFont: 'inter', numFont: 'manrope', scale: '1' });
     } else if (name === 'tonal') {
       Object.assign(cfg, { surface: 'tonal', brand: 'violet', customHex: '#6A3DE8', gradientMode: 'brand_subtle', mode: 'dark', radius: '12', borderWidth: '0', elevation: 'e0', blur: '0', backdrop: 'plain', density: 'standard', font: 'notosans', enFont: 'jakarta', numFont: 'manrope', scale: '1' });
     } else if (name === 'consumer') {
-      Object.assign(cfg, { surface: 'aurora', brand: 'red', customHex: '#D90C09', gradientMode: 'multi_warm', mode: 'dark', radius: '16', borderWidth: 'auto', elevation: 'e2', blur: '0', backdrop: 'plain', density: 'standard', font: 'smiley', enFont: 'jakarta', numFont: 'barlow', scale: '1' });
+      Object.assign(cfg, { surface: 'aurora', brand: 'red', customHex: '#D90C09', gradientMode: 'multi_warm', mode: 'dark', radius: '16', borderWidth: 'auto', elevation: 'e2', blur: '0', backdrop: 'plain', density: 'standard', font: 'smiley', enFont: 'jakarta', numFont: 'ddin', scale: '1' });
     } else if (name === 'finance') {
       Object.assign(cfg, { surface: 'flat', brand: 'green', customHex: '#047900', gradientMode: 'brand_strong', mode: 'dark', radius: '4', borderWidth: '1', elevation: 'e1', blur: '0', backdrop: 'grid', density: 'compact', font: 'notosans', enFont: 'inter', numFont: 'jetbrains', scale: '1' });
     } else if (name === 'guofeng') {
       Object.assign(cfg, { surface: 'stripe', brand: 'teal', customHex: '#0B766E', gradientMode: 'brand_subtle', mode: 'light', radius: '8', borderWidth: '1', elevation: 'e1', blur: '0', backdrop: 'plain', density: 'expanded', font: 'wenkai', enFont: 'playfair', numFont: 'manrope', scale: '1' });
     } else if (name === 'tv_cinema') {
-      Object.assign(cfg, { platform: 'tv', navStyle: 'tv_rail', previewPage: 'tv_page', viewport: 'auto', focusRing: true, surface: 'aurora', brand: 'violet', customHex: '#6A3DE8', gradientMode: 'multi_aurora', mode: 'dark', radius: '16', borderWidth: '2', elevation: 'e3', blur: '16', backdrop: 'dots', density: 'expanded', font: 'zcool_hy', enFont: 'space', numFont: 'space', scale: '1.15' });
+      Object.assign(cfg, { platform: 'tv', navStyle: 'tv_rail', previewPage: 'tv_page', viewport: 'auto', focusRing: true, surface: 'aurora', brand: 'violet', customHex: '#6A3DE8', gradientMode: 'multi_aurora', mode: 'dark', radius: '16', borderWidth: '2', elevation: 'e3', blur: '16', backdrop: 'dots', density: 'expanded', font: 'harmony', enFont: 'space', numFont: 'space', scale: '1.15' });
     } else if (name === 'elder') {
-      Object.assign(cfg, { surface: 'sharp', brand: 'blue', customHex: '#005FF0', gradientMode: 'none', mode: 'light', radius: '12', borderWidth: '2', elevation: 'e2', blur: '0', backdrop: 'plain', density: 'expanded', font: 'notosans', enFont: 'inter', numFont: 'barlow', scale: '1.35' });
+      Object.assign(cfg, { surface: 'sharp', brand: 'blue', customHex: '#005FF0', gradientMode: 'none', mode: 'light', radius: '12', borderWidth: '2', elevation: 'e2', blur: '0', backdrop: 'plain', density: 'expanded', font: 'notosans', enFont: 'inter', numFont: 'ddin', scale: '1.35' });
     }
     render();
   }
@@ -3418,12 +3732,51 @@
     grid.innerHTML = RECOMMENDED_SWATCHES.map(sw => {
       const isAct = sw.hex.toUpperCase() === currentHex;
       const clickCall = sw.official
-        ? `selectPresetColor('${sw.key}');syncModalColorInputs('${sw.hex}');renderRecommendedSwatches();`
-        : `applyCustomColorHex('${sw.hex}','${sw.cn}');renderRecommendedSwatches();`;
+        ? `selectPresetColor('${sw.key}');syncModalColorInputs('${sw.hex}');renderRecommendedSwatches();renderModalGradientSwatches();`
+        : `applyCustomColorHex('${sw.hex}','${sw.cn}');renderRecommendedSwatches();renderModalGradientSwatches();`;
       return `
         <button class="swatch-item ${isAct ? 'active' : ''}" onclick="${clickCall}">
           <span class="swatch-circle" style="background:${sw.hex};"></span>
           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${sw.cn}</span>
+        </button>`;
+    }).join('');
+  }
+
+  function selectModalGradient(gKey) {
+    setOpt('gradientMode', gKey);
+    renderModalGradientSwatches();
+  }
+
+  function renderModalGradientSwatches() {
+    const wrap = document.getElementById('modal-gradient-swatch-grid');
+    if (!wrap) return;
+    const s = computeStylesFor(cfg);
+    const labelEl = document.getElementById('modal-active-grad-label');
+    if (labelEl) labelEl.textContent = `当前：${s.activeGradLabel}`;
+
+    const items = [
+      { key: 'none',           cn: '纯色 Solid',     css: s.brandHex },
+      { key: 'brand_primary',  cn: '品牌·主渐变',    css: s.brandGrads.primary },
+      { key: 'brand_strong',   cn: '品牌·高强渐变',  css: s.brandGrads.strong },
+      { key: 'brand_subtle',   cn: '品牌·轻柔容器',  css: s.brandGrads.subtle },
+      { key: 'brand_glow',     cn: '品牌·径向聚光',  css: s.brandGrads.glow },
+      { key: 'brand_surface',  cn: '品牌·微光底',    css: s.brandGrads.surface },
+      { key: 'multi_aurora',   cn: '🌌 极光四色',    css: s.multiGrads.aurora.css },
+      { key: 'multi_spectrum', cn: '🌈 全谱四色',    css: s.multiGrads.spectrum.css },
+      { key: 'multi_cool',     cn: '❄️ 冷调科技',    css: s.multiGrads.cool.css },
+      { key: 'multi_warm',     cn: '🔥 暖阳庆典',    css: s.multiGrads.warm.css },
+      { key: 'multi_sunset',   cn: '🌅 落日流金',    css: s.multiGrads.sunset.css },
+      { key: 'multi_sakura',   cn: '🌸 樱花霓虹',    css: s.multiGrads.sakura.css },
+      { key: 'multi_ocean',    cn: '🌊 深海流光',    css: s.multiGrads.ocean.css },
+      { key: 'multi_cyber',    cn: '💎 赛博紫晶',    css: s.multiGrads.cyber.css }
+    ];
+
+    wrap.innerHTML = items.map(it => {
+      const isAct = cfg.gradientMode === it.key;
+      return `
+        <button class="swatch-item ${isAct ? 'active' : ''}" onclick="selectModalGradient('${it.key}')" style="flex-direction:column;align-items:stretch;gap:4px;padding:5px;">
+          <span style="display:block;height:18px;border-radius:5px;background:${it.css};border:1px solid rgba(255,255,255,0.22);"></span>
+          <span style="font-size:10.5px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${replaceTextEmojisWithSvg(it.cn, 11, 2, 'outline')}</span>
         </button>`;
     }).join('');
   }
@@ -3483,12 +3836,14 @@
     setTxt('proto-readout-hsl', `HSL(${h}°, ${s}%, ${l}%)`);
     setTxt('proto-readout-hsv', `HSB(${pickerHsv.h}°, ${pickerHsv.s}%, ${pickerHsv.v}%)`);
     render11StopStrips();
+    renderModalGradientSwatches();
   }
 
   function openColorPickerModal() {
     const c = resolveColorObj(cfg);
     syncModalColorInputs(c.hex);
     renderRecommendedSwatches();
+    renderModalGradientSwatches();
     document.getElementById('color-picker-modal').classList.remove('hidden');
   }
 
@@ -3670,10 +4025,14 @@
     if (!target || typeof target !== 'object') {
       throw new Error('未识别到有效的配置字段');
     }
-    const allowedKeys = ['preset','platform','navStyle','userThemePicker','surface','brand','brandStop','customHex','customColorName','gradientMode','mode','radius','borderWidth','elevation','blur','backdrop','density','compState','motionPreset','iconSize','font','enFont','numFont','scale','lang','rtl','focusRing','reducedMotion','pageState','overlay','previewPage','viewport','activeModules'];
+    const allowedKeys = ['preset','platform','navStyle','userThemePicker','surface','brand','brandStop','customHex','customColorName','gradientMode','mode','radius','borderWidth','elevation','blur','backdrop','density','compState','motionPreset','iconSize','iconStroke','iconColorMode','iconStyle','font','enFont','numFont','scale','lang','rtl','focusRing','reducedMotion','pageState','overlay','previewPage','viewport','activeModules'];
     allowedKeys.forEach(k => {
       if (target[k] !== undefined) cfg[k] = target[k];
     });
+    // 兼容旧版导出 JSON 的废弃字体键名自动迁移
+    const legacyFontMap = { huangyou: 'harmony', kuaile: 'misans', mashanzheng: 'wenkai' };
+    if (legacyFontMap[cfg.font]) cfg.font = legacyFontMap[cfg.font];
+    if (cfg.numFont === 'barlow') cfg.numFont = 'ddin';
     render();
     saveCurrentToHistory('导入');
   }
@@ -3729,7 +4088,7 @@
     if (pickerBtn) pickerBtn.classList.toggle('active', cfg.brand === 'custom');
 
     const sysModeNow = sysMedia.matches ? '深' : '浅';
-    document.getElementById('btn-mode-system').textContent = `🖥️ 跟随(${sysModeNow})`;
+    document.getElementById('btn-mode-system').textContent = `🖥️ 跟随系统(${sysModeNow})`;
 
     const isPlaying = Boolean(carouselTimer);
     const btnCarousel = document.getElementById('btn-carousel');
@@ -3751,7 +4110,7 @@
       chip.classList.toggle('active', chip.dataset.val === cfg.font);
     });
 
-    ['platform','navStyle','userThemePicker','surface','mode','radius','borderWidth','elevation','blur','backdrop','enFont','numFont','density','compState','motionPreset','iconSize','scale','lang','viewport','pageState','overlay','previewPage'].forEach(groupKey => {
+    ['platform','navStyle','userThemePicker','surface','mode','radius','borderWidth','elevation','blur','backdrop','enFont','numFont','density','compState','motionPreset','iconSize','iconStroke','iconColorMode','iconStyle','scale','lang','viewport','pageState','overlay','previewPage'].forEach(groupKey => {
       const wrap = document.getElementById('grp-' + groupKey);
       if (!wrap) return;
       wrap.querySelectorAll('button').forEach(btn => {
@@ -3793,6 +4152,9 @@
     document.querySelectorAll('#grp-brand .color-dot').forEach(dot => {
       dot.classList.toggle('active', dot.dataset.val === cfg.brand);
     });
+    document.querySelectorAll('#grp-ext-brand .color-dot').forEach(dot => {
+      dot.classList.toggle('active', cfg.brand === 'custom' && (cfg.customHex || '').toUpperCase() === (dot.dataset.hex || '').toUpperCase());
+    });
 
     const compareBtn = document.getElementById('btn-lock-compare');
     if (compareBtn) {
@@ -3824,6 +4186,13 @@
     const csObj = COMP_STATE_DESC[targetCfg.compState || 'default'] || COMP_STATE_DESC.default;
     const moObj = MOTION_DESC[targetCfg.motionPreset || 'normal'] || MOTION_DESC.normal;
     const icObj = ICON_SIZE_DESC[targetCfg.iconSize || '24'] || ICON_SIZE_DESC['24'];
+    const icStrokeKey = targetCfg.iconStroke || 'auto';
+    const icStrokeObj = ICON_STROKE_DESC[icStrokeKey] || ICON_STROKE_DESC.auto;
+    const icStroke = icStrokeKey === 'auto' ? icObj.stroke : parseFloat(icStrokeKey);
+    const iconColorMode = targetCfg.iconColorMode || 'semantic';
+    const icColorObj = ICON_COLOR_DESC[iconColorMode] || ICON_COLOR_DESC.semantic;
+    const iconStyle = targetCfg.iconStyle || 'outline';
+    const icStyleObj = ICON_STYLE_DESC[iconStyle] || ICON_STYLE_DESC.outline;
 
     const fontCss = `${ef.css}, ${f.css}`;
     const numCss = nf.css || fontCss;
@@ -4025,8 +4394,15 @@
     const sem = isDark ? SEMANTIC_STATUS_TOKENS.dark : SEMANTIC_STATUS_TOKENS.light;
     const dataViz = isDark ? DATAVIZ_TOKENS.dark : DATAVIZ_TOKENS.light;
 
+    // 图标着色策略 (semantic 规范分层 / brand 全量跟随主色 / neutral 克制中性单色)
+    const iconAccentCol = iconColorMode === 'neutral' ? textMain : brandTextHex;
+    const iconGridBoxBg = iconColorMode === 'brand' ? primaryBtnBg : (iconColorMode === 'neutral' ? subContainerBg : badgeBg);
+    const iconGridCol = iconColorMode === 'brand' ? primaryBtnText : (iconColorMode === 'neutral' ? textMain : badgeText);
+    const iconMutedCol = iconColorMode === 'brand' ? brandTextHex : textMuted;
+
     return {
       c, scale, effectiveMode, isDark, r, d, e, sf, f, ef, nf, csObj, moObj, icObj,
+      icStrokeKey, icStrokeObj, icStroke, iconColorMode, icColorObj, iconStyle, icStyleObj, iconAccentCol, iconGridBoxBg, iconGridCol, iconMutedCol,
       fontCss, numCss, scaleNum, t, skelClass, effViewport,
       activeBrandStop, isManualStop,
       brandHex, onBrandHex, brandContainerHex, onBrandContainerHex, brandTextHex, focusRingHex, controlOutline,
@@ -4044,31 +4420,95 @@
   function renderUserThemeWidget(s, targetCfg) {
     if (targetCfg.userThemePicker === 'locked') return '';
 
-    const dotsHtml = CAROUSEL_KEYS.map(k => {
+    const officialDotsHtml = CAROUSEL_KEYS.map(k => {
       const col = COLORS[k];
       const isAct = targetCfg.brand === k;
-      return `<button onclick="selectPresetColor('${k}')" title="点击切换：${col.cn}"
-        style="width:18px;height:18px;border-radius:999px;background:${col.hex};border:${isAct ? '2px solid ' + s.textMain : '1px solid transparent'};transform:${isAct ? 'scale(1.15)' : 'scale(1)'};cursor:pointer;"></button>`;
+      return `<button onclick="selectPresetColor('${k}')" title="点击切换官方色：${col.cn}"
+        style="width:16px;height:16px;border-radius:999px;background:${col.hex};border:${isAct ? '2px solid ' + s.textMain : '1px solid transparent'};transform:${isAct ? 'scale(1.18)' : 'scale(1)'};cursor:pointer;flex-shrink:0;"></button>`;
+    }).join('');
+
+    const extSwatches = [
+      { cn: '琥珀流金', hex: '#D97706' },
+      { cn: '爱马仕橙', hex: '#EA580C' },
+      { cn: '魅惑玫红', hex: '#E11D48' },
+      { cn: '深邃靛蓝', hex: '#4F46E5' },
+      { cn: '蒂芙尼青', hex: '#06B6D4' }
+    ];
+    const extDotsHtml = extSwatches.map(sw => {
+      const isAct = targetCfg.brand === 'custom' && (targetCfg.customHex || '').toUpperCase() === sw.hex;
+      return `<button onclick="applyCustomColorHex('${sw.hex}','${sw.cn}')" title="点击切换扩展行业色：${sw.cn} (${sw.hex})"
+        style="width:15px;height:15px;border-radius:999px;background:${sw.hex};border:${isAct ? '2px solid ' + s.textMain : '1px dashed rgba(128,128,128,0.4)'};transform:${isAct ? 'scale(1.18)' : 'scale(1)'};cursor:pointer;flex-shrink:0;"></button>`;
+    }).join('');
+
+    const gradChips = [
+      { key: 'none',           label: '纯色',     bg: s.brandHex,                  fg: s.onBrandHex },
+      { key: 'brand_primary',  label: '主渐变',   bg: s.brandGrads.primary,        fg: '#FFFFFF' },
+      { key: 'brand_strong',   label: '高强',     bg: s.brandGrads.strong,         fg: s.isDark ? '#0B0E14' : '#FFFFFF' },
+      { key: 'brand_subtle',   label: '轻柔底',   bg: s.brandGrads.subtle,         fg: s.textMain },
+      { key: 'brand_glow',     label: '径向Glow', bg: s.brandGrads.glow,           fg: s.textMain },
+      { key: 'brand_surface',  label: '微光底',   bg: s.brandGrads.surface,        fg: s.textMain },
+      { key: 'multi_aurora',   label: '🌌极光',   bg: s.multiGrads.aurora.css,     fg: '#FFFFFF' },
+      { key: 'multi_spectrum', label: '🌈全谱',   bg: s.multiGrads.spectrum.css,   fg: '#FFFFFF' },
+      { key: 'multi_cool',     label: '❄️冷调',   bg: s.multiGrads.cool.css,       fg: '#FFFFFF' },
+      { key: 'multi_warm',     label: '🔥暖阳',   bg: s.multiGrads.warm.css,       fg: '#FFFFFF' },
+      { key: 'multi_sunset',   label: '🌅落日',   bg: s.multiGrads.sunset.css,     fg: '#FFFFFF' },
+      { key: 'multi_sakura',   label: '🌸樱霓',   bg: s.multiGrads.sakura.css,     fg: '#FFFFFF' },
+      { key: 'multi_ocean',    label: '🌊深海',   bg: s.multiGrads.ocean.css,      fg: '#FFFFFF' },
+      { key: 'multi_cyber',    label: '💎赛博',   bg: s.multiGrads.cyber.css,      fg: '#FFFFFF' }
+    ];
+    const gradBarHtml = gradChips.map(g => {
+      const isAct = targetCfg.gradientMode === g.key;
+      return `<button onclick="setOpt('gradientMode','${g.key}')" title="点击切换渐变：${g.label}"
+        style="padding:1.5px 6px;border-radius:999px;font-size:10px;font-weight:700;background:${g.bg};color:${g.fg};border:${isAct ? '2px solid ' + s.textMain : '1px solid rgba(128,128,128,0.28)'};cursor:pointer;white-space:nowrap;">${g.label}</button>`;
     }).join('');
 
     if (targetCfg.userThemePicker === 'full_settings') {
+      const sysModeNow = sysMedia.matches ? '深' : '浅';
       return `
-        <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:10px 14px;box-shadow:${s.boxShadow};font-size:12px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-            <span style="font-weight:700;color:${s.textMain};">⚙️ 用户端外观面板 (ThemeController · 7色+明暗)</span>
-            <div style="display:flex;align-items:center;gap:6px;">${dotsHtml}</div>
-            <div style="display:flex;gap:4px;">
-              <button onclick="setOpt('mode','light')" style="padding:2px 7px;border-radius:4px;font-size:11px;border:1px solid ${s.borderCol};background:${targetCfg.mode==='light'?s.primaryHex:'transparent'};color:${targetCfg.mode==='light'?s.onBrandHex:s.textMain};cursor:pointer;">浅色</button>
-              <button onclick="setOpt('mode','dark')" style="padding:2px 7px;border-radius:4px;font-size:11px;border:1px solid ${s.borderCol};background:${targetCfg.mode==='dark'?s.primaryHex:'transparent'};color:${targetCfg.mode==='dark'?s.onBrandHex:s.textMain};cursor:pointer;">深色</button>
+        <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:8px 11px;box-shadow:${s.boxShadow};font-size:11px;display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px;">
+            <span style="font-weight:700;color:${s.textMain};">⚙️ 用户端全套面板 (12色 + 品牌/多色渐变 + 明暗/跟随 + 字号)</span>
+            <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+              ${officialDotsHtml}
+              <span style="color:${s.borderCol};font-size:10px;">|</span>
+              ${extDotsHtml}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding-top:4px;border-top:1px dashed ${s.borderCol};">
+            <span style="font-size:10px;color:${s.textMuted};font-weight:600;">渐变色板:</span>
+            ${gradBarHtml}
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px;padding-top:4px;border-top:1px dashed ${s.borderCol};">
+            <div style="display:flex;align-items:center;gap:3.5px;">
+              <span style="font-size:10px;color:${s.textMuted};font-weight:600;">明暗:</span>
+              <button onclick="setOpt('mode','light')" style="padding:1.5px 6px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid ${s.borderCol};background:${targetCfg.mode==='light'?s.primaryHex:'transparent'};color:${targetCfg.mode==='light'?s.onBrandHex:s.textMain};cursor:pointer;">☀️ 浅色</button>
+              <button onclick="setOpt('mode','dark')" style="padding:1.5px 6px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid ${s.borderCol};background:${targetCfg.mode==='dark'?s.primaryHex:'transparent'};color:${targetCfg.mode==='dark'?s.onBrandHex:s.textMain};cursor:pointer;">🌙 深色</button>
+              <button onclick="setOpt('mode','system')" style="padding:1.5px 6px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid ${s.borderCol};background:${targetCfg.mode==='system'?s.primaryHex:'transparent'};color:${targetCfg.mode==='system'?s.onBrandHex:s.textMain};cursor:pointer;">🖥️ 跟随系统(${sysModeNow})</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:3.5px;">
+              <span style="font-size:10px;color:${s.textMuted};font-weight:600;">字号:</span>
+              <button onclick="setOpt('scale','1')" style="padding:1.5px 6px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid ${s.borderCol};background:${String(targetCfg.scale)==='1'?s.primaryHex:'transparent'};color:${String(targetCfg.scale)==='1'?s.onBrandHex:s.textMain};cursor:pointer;">A 标准</button>
+              <button onclick="setOpt('scale','1.15')" style="padding:1.5px 6px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid ${s.borderCol};background:${String(targetCfg.scale)==='1.15'?s.primaryHex:'transparent'};color:${String(targetCfg.scale)==='1.15'?s.onBrandHex:s.textMain};cursor:pointer;">A+ 舒适</button>
+              <button onclick="setOpt('scale','1.35')" style="padding:1.5px 6px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid ${s.borderCol};background:${String(targetCfg.scale)==='1.35'?s.primaryHex:'transparent'};color:${String(targetCfg.scale)==='1.35'?s.onBrandHex:s.textMain};cursor:pointer;">A++ 大字</button>
             </div>
           </div>
         </div>`;
     }
 
     return `
-      <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:9px 14px;box-shadow:${s.boxShadow};font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <span style="font-weight:700;color:${s.textMain};">🎨 用户端可自选 7 大官方主题色：</span>
-        <div style="display:flex;align-items:center;gap:7px;">${dotsHtml}</div>
+      <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:8px 11px;box-shadow:${s.boxShadow};font-size:11px;display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+          <span style="font-weight:700;color:${s.textMain};">🎨 用户端自选色板 (7官方色 + 5扩展色)：</span>
+          <div style="display:flex;align-items:center;gap:4.5px;flex-wrap:wrap;">
+            ${officialDotsHtml}
+            <span style="color:${s.borderCol};font-size:10px;">|</span>
+            ${extDotsHtml}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding-top:4px;border-top:1px dashed ${s.borderCol};">
+          <span style="font-size:10px;color:${s.textMuted};font-weight:600;">🌈 品牌/多色渐变:</span>
+          ${gradBarHtml}
+        </div>
       </div>`;
   }
 
@@ -4098,9 +4538,10 @@
         </div>`;
     }
     if (targetCfg.pageState === 'empty') {
+      const emptyIconPx = Math.max(22, s.icObj.px);
       return `
         <div style="background:${s.cardBg};${s.cardBackdrop}color:${s.textMain};border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:${s.d.pad};box-shadow:${s.boxShadow};text-align:center;">
-          <div style="width:48px;height:48px;border-radius:999px;background:${s.badgeBg};color:${s.badgeText};display:flex;align-items:center;justify-content:center;margin:6px auto 10px;font-size:20px;">📭</div>
+          <div style="width:48px;height:48px;border-radius:999px;background:${s.iconGridBoxBg};color:${s.iconGridCol};display:flex;align-items:center;justify-content:center;margin:6px auto 10px;">${dsIcon('inbox', emptyIconPx, s.icStroke)}</div>
           <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${s.t.emptyTitle}</div>
           <div style="font-size:12px;color:${s.textMuted};margin-bottom:14px;">${s.t.emptyDesc}</div>
           <button onclick="setOpt('pageState','normal')" class="focusable-target" style="padding:${s.d.btnPy} ${s.d.btnPx};font-size:12px;font-weight:700;border:none;cursor:pointer;background:${s.primaryBtnBg};color:${s.primaryBtnText};border-radius:${s.r.btn};box-shadow:${s.btnShadow};">
@@ -4109,9 +4550,10 @@
         </div>`;
     }
     if (targetCfg.pageState === 'error') {
+      const errIconPx = Math.max(22, s.icObj.px);
       return `
         <div style="background:${s.cardBg};${s.cardBackdrop}color:${s.textMain};border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:${s.d.pad};box-shadow:${s.boxShadow};text-align:center;">
-          <div style="width:48px;height:48px;border-radius:999px;background:${s.sem.error.container};color:${s.sem.error.onContainer};display:flex;align-items:center;justify-content:center;margin:6px auto 10px;font-size:20px;">⚠️</div>
+          <div style="width:48px;height:48px;border-radius:999px;background:${s.sem.error.container};color:${s.sem.error.onContainer};display:flex;align-items:center;justify-content:center;margin:6px auto 10px;">${dsIcon('alert', errIconPx, s.icStroke)}</div>
           <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${s.t.errorTitle}</div>
           <div style="font-size:12px;color:${s.textMuted};margin-bottom:14px;">${s.t.errorDesc}</div>
           <button onclick="setOpt('pageState','normal')" class="focusable-target" style="padding:${s.d.btnPy} ${s.d.btnPx};font-size:12px;font-weight:700;border:none;cursor:pointer;background:${s.sem.error.main};color:${s.sem.error.on};border-radius:${s.r.btn};">
@@ -4149,11 +4591,11 @@
         <div style="background:${s.heroCardBg};${s.cardBackdrop}color:${s.textMain};border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:10px 12px;box-shadow:${s.boxShadow};">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:6px;white-space:nowrap;">
             <div style="font-weight:700;font-size:${titleFs};display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;text-overflow:ellipsis;">
-              <span style="font-size:${icPx};line-height:1;">💠</span>
+              <span style="color:${s.iconAccentCol};display:inline-flex;align-items:center;">${dsIcon('diamond', s.icObj.px, s.icStroke)}</span>
               <span style="overflow:hidden;text-overflow:ellipsis;">${s.sf.cn.split(' (')[0]} · ${s.c.cn}</span>
             </div>
             <span style="padding:2px 7px;font-size:10px;font-weight:700;background:${s.badgeBg};color:${s.badgeText};border:${s.badgeBorder};border-radius:${s.r.badge};flex-shrink:0;">
-              ${s.compStateKey} · ${s.moObj.ms}
+              ${s.compStateKey} · ${s.moObj.ms} · SVG ${s.icObj.px}px/${s.icStroke}w
             </span>
           </div>
 
@@ -4232,28 +4674,38 @@
         </div>` : ''}
 
         ${hasMod(targetCfg, 'form') ? `
-        <!-- 表单契约 (controlOutline ≥3:1)、组件状态矩阵与 4 大语义状态色标签 -->
-        <div style="background:${s.cardBg};${s.cardBackdrop}color:${s.textMain};border:${s.cardBorder};border-radius:${s.r.card};padding:10px 12px;box-shadow:${s.boxShadow};">
+        <!-- 表单契约 (controlOutline ≥3:1 + Error 报错校验态对照)、组件状态矩阵与 4 大语义状态色标签 -->
+        <div style="background:${s.cardBg};${s.cardBackdrop}color:${s.textMain};border:${s.cardBorder};border-radius:${s.r.card};padding:9px 11px;box-shadow:${s.boxShadow};">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:6px;white-space:nowrap;">
-            <span style="font-size:10.5px;font-weight:600;color:${s.textMuted};overflow:hidden;text-overflow:ellipsis;">${s.t.formLabel} (${s.controlOutline})</span>
+            <span style="font-size:10.5px;font-weight:600;color:${s.textMuted};overflow:hidden;text-overflow:ellipsis;">${s.t.formLabel} (${s.controlOutline}) · 含报错校验态 (docs/10·17)</span>
             <span style="font-size:10px;color:${s.brandTextHex};font-family:monospace;flex-shrink:0;">State: ${s.compStateKey.toUpperCase()}</span>
           </div>
-          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:7px;font-size:11.5px;">
-            <input type="text" value="DesignSystem Cross-Platform v2.4" readonly class="focusable-target"
-              style="flex:1;min-width:130px;padding:5px 9px;font-size:${bodyFs};font-family:inherit;outline:none;background:${s.subContainerBg};color:${s.textMain};border:1px solid ${s.controlOutline};border-radius:${s.r.btn};${s.stateInputExtra}">
-            <span style="display:inline-flex;align-items:center;gap:5px;font-weight:600;${s.stateInputExtra}">
-              <span>${s.t.hotReload}</span>
-              <span style="width:32px;height:18px;border-radius:999px;background:${s.primaryHex};padding:2px;display:inline-flex;justify-content:flex-end;">
-                <span style="width:14px;height:14px;border-radius:999px;background:${s.onBrandHex};"></span>
-              </span>
-            </span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;font-size:11px;">
+            <div>
+              <input type="text" value="DesignSystem v2.4 (正常)" readonly class="focusable-target"
+                style="width:100%;padding:4.5px 8px;font-size:${bodyFs};font-family:inherit;outline:none;background:${s.subContainerBg};color:${s.textMain};border:1px solid ${s.controlOutline};border-radius:${s.r.btn};${s.stateInputExtra}">
+              <div style="font-size:9.5px;color:${s.textMuted};margin-top:2px;">✓ 默认边框 controlOutline ${s.controlOutline} (≥3:1)</div>
+            </div>
+            <div>
+              <input type="text" value="invalid_token_hex" readonly class="focusable-target"
+                style="width:100%;padding:4.5px 8px;font-size:${bodyFs};font-family:inherit;outline:none;background:${s.sem.error.container};color:${s.sem.error.onContainer};border:1.5px solid ${s.sem.error.main};border-radius:${s.r.btn};${s.stateInputExtra}">
+              <div style="font-size:9.5px;color:${s.sem.error.text};font-weight:600;margin-top:2px;">⚠️ 报错态：1.5px ${s.sem.error.main} + 错误文案</div>
+            </div>
           </div>
 
-          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px;font-size:10.5px;">
-            <span style="padding:1.5px 7px;font-weight:600;background:${s.sem.success.container};color:${s.sem.success.onContainer};border-radius:${s.r.badge};" title="Container + onSuccessContainer">✓ Success</span>
-            <span style="padding:1.5px 7px;font-weight:600;background:${s.sem.warning.container};color:${s.sem.warning.onContainer};border-radius:${s.r.badge};" title="Container + onWarningContainer">⚡ Warning</span>
-            <span style="padding:1.5px 7px;font-weight:600;background:${s.sem.error.container};color:${s.sem.error.onContainer};border-radius:${s.r.badge};" title="Container + onErrorContainer">✕ Error</span>
-            <span style="padding:1.5px 7px;font-weight:600;background:${s.sem.info.container};color:${s.sem.info.onContainer};border-radius:${s.r.badge};" title="Container + onInfoContainer">ℹ Info</span>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:5px;font-size:10.5px;">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;">
+              <span style="padding:1.5px 6px;font-weight:600;background:${s.sem.success.container};color:${s.sem.success.onContainer};border-radius:${s.r.badge};" title="Container + onSuccessContainer">✓ Success</span>
+              <span style="padding:1.5px 6px;font-weight:600;background:${s.sem.warning.container};color:${s.sem.warning.onContainer};border-radius:${s.r.badge};" title="Container + onWarningContainer">⚡ Warning</span>
+              <span style="padding:1.5px 6px;font-weight:600;background:${s.sem.error.container};color:${s.sem.error.onContainer};border-radius:${s.r.badge};" title="Container + onErrorContainer">✕ Error</span>
+              <span style="padding:1.5px 6px;font-weight:600;background:${s.sem.info.container};color:${s.sem.info.onContainer};border-radius:${s.r.badge};" title="Container + onInfoContainer">ℹ Info</span>
+            </div>
+            <span style="display:inline-flex;align-items:center;gap:4px;font-weight:600;${s.stateInputExtra}">
+              <span>${s.t.hotReload}</span>
+              <span style="width:28px;height:16px;border-radius:999px;background:${s.primaryHex};padding:2px;display:inline-flex;justify-content:flex-end;">
+                <span style="width:12px;height:12px;border-radius:999px;background:${s.onBrandHex};"></span>
+              </span>
+            </span>
           </div>
         </div>` : ''}
       </div>`;
@@ -4347,58 +4799,86 @@
         </div>
 
         <!-- 页面内容区（flex:1 自适应垂直均布，确保手机底栏与右侧卡片底部 100% 严丝合缝对齐） -->
-        <div style="flex:1;padding:9px 10px;display:flex;flex-direction:column;justify-content:space-between;gap:7px;">
+        <div style="flex:1;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;">
           ${abnormalInPhone ? abnormalInPhone : `
-            ${hasMod(targetCfg, 'kpi') ? `
-            <!-- 核心指标卡 -->
-            <div style="background:${s.heroCardBg};${s.cardBackdrop}border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:9px 11px;box-shadow:${s.boxShadow};">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                <span style="font-size:${bodyFs};font-weight:600;color:${s.textMuted};">${s.t.gmvLabel}</span>
-                <span style="padding:1.5px 7px;font-size:10.5px;font-weight:600;background:${s.sem.success.container};color:${s.sem.success.onContainer};border-radius:${s.r.badge};font-family:${s.numCss};">+18.6%</span>
-              </div>
-              <div style="font-size:${Math.round(21 * s.scaleNum)}px;font-weight:800;font-family:${s.numCss};margin-bottom:7px;${s.heroNumStyle}">
-                ¥ 128,490.00
-              </div>
-              <div style="display:flex;gap:6px;">
-                <button class="focusable-target" style="flex:1;padding:5px 7px;font-size:${bodyFs};font-weight:700;font-family:inherit;border:none;background:${s.primaryBtnBg};color:${s.primaryBtnText};border-radius:${s.r.btn};box-shadow:${s.btnShadow};cursor:pointer;${s.stateBtnExtra}">${isAurora ? '✦ ' + s.t.withdrawBtn : s.t.withdrawBtn}</button>
-                <button class="focusable-target" style="flex:1;padding:5px 7px;font-size:${bodyFs};font-weight:600;font-family:inherit;background:${s.secBtnBg};color:${s.secBtnColor};border:${s.secBtnBorder};border-radius:${s.r.btn};cursor:pointer;${s.stateBtnExtra}">${s.t.detailBtn}</button>
+            ${(hasMod(targetCfg, 'theme') && targetCfg.userThemePicker !== 'locked') ? `
+            <!-- 手机端内部同步换肤与渐变快捷栏 -->
+            <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:5px 8px;display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:10px;">
+              <span style="font-weight:700;white-space:nowrap;">${targetCfg.userThemePicker === 'full_settings' ? '⚙️ 全套外观' : '🎨 换肤/渐变'}</span>
+              <div style="display:flex;align-items:center;gap:3.5px;">
+                ${CAROUSEL_KEYS.slice(0, 5).map(k => `<span onclick="selectPresetColor('${k}')" style="width:11px;height:11px;border-radius:999px;background:${COLORS[k].hex};border:${targetCfg.brand===k?'1.5px solid '+s.textMain:'none'};cursor:pointer;display:inline-block;"></span>`).join('')}
+                <span onclick="setOpt('gradientMode','multi_aurora')" title="极光渐变" style="padding:0 4px;border-radius:999px;background:${s.multiGrads.aurora.css};color:#FFF;font-size:8.5px;font-weight:700;cursor:pointer;">极光</span>
+                <span onclick="setOpt('gradientMode','multi_sunset')" title="落日渐变" style="padding:0 4px;border-radius:999px;background:${s.multiGrads.sunset.css};color:#FFF;font-size:8.5px;font-weight:700;cursor:pointer;">落日</span>
               </div>
             </div>` : ''}
 
-            <!-- 4 宫格金刚区 (响应 iconSize 图标尺寸标尺) -->
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:7px 6px;text-align:center;">
+            ${hasMod(targetCfg, 'kpi') ? `
+            <!-- 核心指标卡 -->
+            <div style="background:${s.heroCardBg};${s.cardBackdrop}border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:8px 10px;box-shadow:${s.boxShadow};">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+                <span style="font-size:${bodyFs};font-weight:600;color:${s.textMuted};">${s.t.gmvLabel}</span>
+                <span style="padding:1px 6px;font-size:10px;font-weight:600;background:${s.sem.success.container};color:${s.sem.success.onContainer};border-radius:${s.r.badge};font-family:${s.numCss};">+18.6%</span>
+              </div>
+              <div style="font-size:${Math.round(20 * s.scaleNum)}px;font-weight:800;font-family:${s.numCss};margin-bottom:6px;${s.heroNumStyle}">
+                ¥ 128,490.00
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button class="focusable-target" style="flex:1;padding:4.5px 6px;font-size:${bodyFs};font-weight:700;font-family:inherit;border:none;background:${s.primaryBtnBg};color:${s.primaryBtnText};border-radius:${s.r.btn};box-shadow:${s.btnShadow};cursor:pointer;${s.stateBtnExtra}">${isAurora ? '✦ ' + s.t.withdrawBtn : s.t.withdrawBtn}</button>
+                <button class="focusable-target" style="flex:1;padding:4.5px 6px;font-size:${bodyFs};font-weight:600;font-family:inherit;background:${s.secBtnBg};color:${s.secBtnColor};border:${s.secBtnBorder};border-radius:${s.r.btn};cursor:pointer;${s.stateBtnExtra}">${s.t.detailBtn}</button>
+              </div>
+            </div>` : ''}
+
+            <!-- 4 宫格金刚区 (响应 iconSize 图标尺寸、iconStroke 线宽、iconColorMode 颜色策略与 iconStyle 图标形态) -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:6px 5px;text-align:center;">
               <div>
-                <div style="width:${gridIconBox};height:${gridIconBox};font-size:${icPx}px;margin:0 auto 3px;border-radius:${s.r.btn};background:${s.badgeBg};color:${s.badgeText};display:flex;align-items:center;justify-content:center;">📅</div>
-                <div style="font-size:${Math.round(10.5 * s.scaleNum)}px;font-weight:600;">${s.t.gridTask}</div>
+                <div style="width:${gridIconBox};height:${gridIconBox};margin:0 auto 2px;border-radius:${s.r.btn};background:${s.iconGridBoxBg};color:${s.iconGridCol};display:flex;align-items:center;justify-content:center;">${dsIcon('calendar', icPx, s.icStroke)}</div>
+                <div style="font-size:${Math.round(10 * s.scaleNum)}px;font-weight:600;">${s.t.gridTask}</div>
               </div>
               <div>
-                <div style="width:${gridIconBox};height:${gridIconBox};font-size:${icPx}px;margin:0 auto 3px;border-radius:${s.r.btn};background:${s.badgeBg};color:${s.badgeText};display:flex;align-items:center;justify-content:center;">📊</div>
-                <div style="font-size:${Math.round(10.5 * s.scaleNum)}px;font-weight:600;">${s.t.gridReport}</div>
+                <div style="width:${gridIconBox};height:${gridIconBox};margin:0 auto 2px;border-radius:${s.r.btn};background:${s.iconGridBoxBg};color:${s.iconGridCol};display:flex;align-items:center;justify-content:center;">${dsIcon('barchart', icPx, s.icStroke)}</div>
+                <div style="font-size:${Math.round(10 * s.scaleNum)}px;font-weight:600;">${s.t.gridReport}</div>
               </div>
               <div>
-                <div style="width:${gridIconBox};height:${gridIconBox};font-size:${icPx}px;margin:0 auto 3px;border-radius:${s.r.btn};background:${s.badgeBg};color:${s.badgeText};display:flex;align-items:center;justify-content:center;">⚡</div>
-                <div style="font-size:${Math.round(10.5 * s.scaleNum)}px;font-weight:600;">${s.t.gridAi}</div>
+                <div style="width:${gridIconBox};height:${gridIconBox};margin:0 auto 2px;border-radius:${s.r.btn};background:${s.iconGridBoxBg};color:${s.iconGridCol};display:flex;align-items:center;justify-content:center;">${dsIcon('zap', icPx, s.icStroke)}</div>
+                <div style="font-size:${Math.round(10 * s.scaleNum)}px;font-weight:600;">${s.t.gridAi}</div>
               </div>
               <div>
-                <div style="width:${gridIconBox};height:${gridIconBox};font-size:${icPx}px;margin:0 auto 3px;border-radius:${s.r.btn};background:${s.badgeBg};color:${s.badgeText};display:flex;align-items:center;justify-content:center;">🎨</div>
-                <div style="font-size:${Math.round(10.5 * s.scaleNum)}px;font-weight:600;">${s.t.gridTheme}</div>
+                <div style="width:${gridIconBox};height:${gridIconBox};margin:0 auto 2px;border-radius:${s.r.btn};background:${s.iconGridBoxBg};color:${s.iconGridCol};display:flex;align-items:center;justify-content:center;">${dsIcon('palette', icPx, s.icStroke)}</div>
+                <div style="font-size:${Math.round(10 * s.scaleNum)}px;font-weight:600;">${s.t.gridTheme}</div>
               </div>
             </div>
 
+            ${(hasMod(targetCfg, 'chart') || hasMod(targetCfg, 'form')) ? `
+            <!-- 手机端内部迷你图表与表单输入联动行 -->
+            <div style="display:grid;grid-template-columns:${(hasMod(targetCfg, 'chart') && hasMod(targetCfg, 'form')) ? '1fr 1.15fr' : '1fr'};gap:5px;">
+              ${hasMod(targetCfg, 'chart') ? `
+              <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:5px 7px;display:flex;flex-direction:column;justify-content:space-between;">
+                <div style="font-size:9.5px;font-weight:700;color:${s.textMuted};margin-bottom:2px;">📈 8色趋势</div>
+                <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:2px;align-items:end;height:20px;">
+                  ${s.dataViz.map((col, idx) => `<div style="height:${[55,80,50,90,65,95,60,85][idx]}%;background:${col};border-radius:1.5px 1.5px 0 0;"></div>`).join('')}
+                </div>
+              </div>` : ''}
+              ${hasMod(targetCfg, 'form') ? `
+              <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:5px 7px;display:flex;flex-direction:column;justify-content:center;gap:2px;">
+                <div style="font-size:9.5px;font-weight:700;color:${s.textMuted};">🔍 快捷检索 (${s.controlOutline})</div>
+                <input type="text" value="Token v2.4" readonly style="width:100%;padding:2px 6px;font-size:10px;background:${s.subContainerBg};color:${s.textMain};border:1px solid ${s.controlOutline};border-radius:${s.r.badge};outline:none;">
+              </div>` : ''}
+            </div>` : ''}
+
             ${hasMod(targetCfg, 'list') ? `
             <!-- 列表项 AppListTile -->
-            <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:8px 10px;display:flex;flex-direction:column;gap:5px;font-size:${bodyFs};">
-              <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:5px;border-bottom:1px solid ${s.borderCol};">
+            <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:6px 9px;display:flex;flex-direction:column;gap:4px;font-size:${bodyFs};">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:4px;border-bottom:1px solid ${s.borderCol};">
                 <div>
                   <div style="font-weight:600;">Design System v2.0 Release</div>
-                  <div style="font-size:10px;color:${s.textMuted};">10m ago · CI/CD Pipeline</div>
+                  <div style="font-size:9.5px;color:${s.textMuted};">10m ago · CI/CD Pipeline</div>
                 </div>
-                <span style="padding:1.5px 6px;font-size:10px;font-weight:600;background:${s.sem.success.container};color:${s.sem.success.onContainer};border-radius:${s.r.badge};">Online</span>
+                <span style="padding:1px 6px;font-size:9.5px;font-weight:600;background:${s.sem.success.container};color:${s.sem.success.onContainer};border-radius:${s.r.badge};">Online</span>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div>
                   <div style="font-weight:600;">WCAG AA Contrast Audit</div>
-                  <div style="font-size:10px;color:${s.textMuted};">11-Stop Palette Verified</div>
+                  <div style="font-size:9.5px;color:${s.textMuted};">11-Stop Palette Verified</div>
                 </div>
                 <span style="font-family:${s.numCss};font-weight:700;color:${s.brandTextHex};">100%</span>
               </div>
@@ -4470,7 +4950,7 @@
         <div style="font-size:11px;font-weight:800;color:${s.textMuted};padding:2px 8px;">📚 门户侧边导览</div>
         <div style="padding:7px 10px;border-radius:${s.r.btn};background:${s.badgeBg};color:${s.badgeText};">🚀 产品核心总览</div>
         <div style="padding:7px 10px;border-radius:${s.r.btn};color:${s.textMuted};">🎨 11档动态色阶</div>
-        <div style="padding:7px 10px;border-radius:${s.r.btn};color:${s.textMuted};">🌈 9种官方渐变</div>
+        <div style="padding:7px 10px;border-radius:${s.r.btn};color:${s.textMuted};">🌈 13种官方渐变</div>
         <div style="padding:7px 10px;border-radius:${s.r.btn};color:${s.textMuted};">🛡️ WCAG AA门禁</div>
       </div>` : '';
 
@@ -4506,7 +4986,7 @@
           <!-- 网站首屏 4 项关键指标栏 -->
           <div style="display:grid;grid-template-columns:${kpiCols};gap:10px;padding-top:14px;border-top:1px solid ${s.borderCol};">
             <div>
-              <div style="font-size:${Math.round(20 * s.scaleNum)}px;font-weight:800;font-family:${s.numCss};${s.heroNumStyle}">7 × 11</div>
+              <div style="font-size:${Math.round(20 * s.scaleNum)}px;font-weight:800;font-family:${s.numCss};${s.heroNumStyle}">36 × 11</div>
               <div style="font-size:11.5px;color:${s.textMuted};">50–950 Color Scale</div>
             </div>
             <div>
@@ -4514,8 +4994,8 @@
               <div style="font-size:11.5px;color:${s.textMuted};">WCAG AA Contrast</div>
             </div>
             <div>
-              <div style="font-size:${Math.round(20 * s.scaleNum)}px;font-weight:800;font-family:${s.numCss};${s.heroNumStyle}">9 Gradients</div>
-              <div style="font-size:11.5px;color:${s.textMuted};">5 Brand + 4 Multi</div>
+              <div style="font-size:${Math.round(20 * s.scaleNum)}px;font-weight:800;font-family:${s.numCss};${s.heroNumStyle}">13 Gradients</div>
+              <div style="font-size:11.5px;color:${s.textMuted};">5 Brand + 8 Multi</div>
             </div>
             <div>
               <div style="font-size:${Math.round(20 * s.scaleNum)}px;font-weight:800;font-family:${s.numCss};${s.heroNumStyle}">99.98%</div>
@@ -4524,23 +5004,57 @@
           </div>
         </div>` : ''}
 
+        ${(hasMod(targetCfg, 'chart') || hasMod(targetCfg, 'form')) ? `
+        <!-- 网站端数据可视化图表与交互表单模块组合 -->
+        <div style="display:grid;grid-template-columns:${(!isMobileVp && hasMod(targetCfg, 'chart') && hasMod(targetCfg, 'form')) ? '1fr 1.15fr' : '1fr'};gap:${s.d.gap};">
+          ${hasMod(targetCfg, 'chart') ? `
+          <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:${s.d.pad};box-shadow:${s.boxShadow};display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <span style="font-weight:700;font-size:${Math.round(13 * s.scaleNum)}px;">📈 官网实时遥测趋势 (AppDataViz 8色)</span>
+              <span style="font-size:10.5px;color:${s.textMuted};font-family:${s.numCss};">99.98% SLA</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;align-items:end;height:56px;padding:6px 8px;background:${s.subContainerBg};border-radius:${s.r.btn};border:1px solid ${s.borderCol};">
+              ${s.dataViz.map((col, idx) => `<div style="height:${[58,76,54,88,70,96,64,84][idx]}%;background:${col};border-radius:3px 3px 0 0;" title="series${idx+1}: ${col}"></div>`).join('')}
+            </div>
+          </div>` : ''}
+          ${hasMod(targetCfg, 'form') ? `
+          <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:${s.d.pad};box-shadow:${s.boxShadow};display:flex;flex-direction:column;justify-content:space-between;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-weight:700;font-size:${Math.round(13 * s.scaleNum)}px;">📝 官网订阅与检索表单 (正常态 vs 报错态)</span>
+              <span style="font-size:10.5px;color:${s.textMuted};">controlOutline ${s.controlOutline}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div>
+                <input type="text" value="team@designsystem.cloud" readonly class="focusable-target"
+                  style="width:100%;padding:6px 10px;font-size:${bodyFs};background:${s.subContainerBg};color:${s.textMain};border:1px solid ${s.controlOutline};border-radius:${s.r.btn};${s.stateInputExtra}">
+                <div style="font-size:10px;color:${s.textMuted};margin-top:3px;">✓ 正常输入边框 ≥ 3:1</div>
+              </div>
+              <div>
+                <input type="text" value="invalid-email@" readonly class="focusable-target"
+                  style="width:100%;padding:6px 10px;font-size:${bodyFs};background:${s.sem.error.container};color:${s.sem.error.onContainer};border:1.5px solid ${s.sem.error.main};border-radius:${s.r.btn};${s.stateInputExtra}">
+                <div style="font-size:10px;color:${s.sem.error.text};font-weight:600;margin-top:3px;">⚠️ 报错态：1.5px ${s.sem.error.main}</div>
+              </div>
+            </div>
+          </div>` : ''}
+        </div>` : ''}
+
         ${hasMod(targetCfg, 'list') ? `
-        <!-- 响应式 Bento 特性卡片网格 (lg:3列 / md:2列 / sm:1列) -->
+        <!-- 响应式 Bento 特性卡片网格 (lg:3列 / md:2列 / sm:1列 · 响应 iconSize 尺寸、iconStroke 线宽与 iconColorMode 颜色策略) -->
         <div style="display:grid;grid-template-columns:${bentoCols};gap:${s.d.gap};">
           <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:${s.d.pad};box-shadow:${s.boxShadow};">
-            <div style="width:36px;height:36px;font-size:${icPx};border-radius:${s.r.btn};background:${s.badgeBg};color:${s.badgeText};display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:8px;">🎨</div>
+            <div style="width:${Math.max(36, s.icObj.px + 12)}px;height:${Math.max(36, s.icObj.px + 12)}px;border-radius:${s.r.btn};background:${s.iconGridBoxBg};color:${s.iconGridCol};display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:8px;">${dsIcon('palette', s.icObj.px, s.icStroke)}</div>
             <div style="font-weight:700;font-size:${Math.round(14 * s.scaleNum)}px;margin-bottom:4px;">11 档动态色板引擎</div>
             <div style="font-size:${bodyFs};color:${s.textMuted};line-height:1.55;">无论选择 7 大官方色还是任意自定义颜色，均自动生成 50–950 完整 11 档色板与明暗语义映射。</div>
           </div>
 
           <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:${s.d.pad};box-shadow:${s.boxShadow};">
-            <div style="width:36px;height:36px;font-size:${icPx};border-radius:${s.r.btn};background:${s.sem.success.container};color:${s.sem.success.onContainer};display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:8px;">📐</div>
+            <div style="width:${Math.max(36, s.icObj.px + 12)}px;height:${Math.max(36, s.icObj.px + 12)}px;border-radius:${s.r.btn};background:${s.iconColorMode === 'brand' ? s.primaryBtnBg : (s.iconColorMode === 'neutral' ? s.subContainerBg : s.sem.success.container)};color:${s.iconColorMode === 'brand' ? s.primaryBtnText : (s.iconColorMode === 'neutral' ? s.textMain : s.sem.success.onContainer)};display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:8px;">${dsIcon('layers', s.icObj.px, s.icStroke)}</div>
             <div style="font-weight:700;font-size:${Math.round(14 * s.scaleNum)}px;margin-bottom:4px;">5 层 Tonal 表面材质</div>
             <div style="font-size:${bodyFs};color:${s.textMuted};line-height:1.55;">支持 Surface / Low(+2%) / Container(+4%) / High(+6%) 阶梯色阶、毛玻璃与 AI 聚光微光。</div>
           </div>
 
           <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};${s.cardTopBorder}border-radius:${s.r.card};padding:${s.d.pad};box-shadow:${s.boxShadow};">
-            <div style="width:36px;height:36px;font-size:${icPx};border-radius:${s.r.btn};background:${s.sem.info.container};color:${s.sem.info.onContainer};display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:8px;">⚡</div>
+            <div style="width:${Math.max(36, s.icObj.px + 12)}px;height:${Math.max(36, s.icObj.px + 12)}px;border-radius:${s.r.btn};background:${s.iconColorMode === 'brand' ? s.primaryBtnBg : (s.iconColorMode === 'neutral' ? s.subContainerBg : s.sem.info.container)};color:${s.iconColorMode === 'brand' ? s.primaryBtnText : (s.iconColorMode === 'neutral' ? s.textMain : s.sem.info.onContainer)};display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:8px;">${dsIcon('zap', s.icObj.px, s.icStroke)}</div>
             <div style="font-weight:700;font-size:${Math.round(14 * s.scaleNum)}px;margin-bottom:4px;">Flutter & Web 零歧义交接</div>
             <div style="font-size:${bodyFs};color:${s.textMuted};line-height:1.55;">一键导出符合 tokens.json v2 规范的 JSON 架构或复制双端代码契约。</div>
           </div>
@@ -4898,6 +5412,30 @@
           </div>
         </div>` : ''}
 
+        ${(hasMod(targetCfg, 'chart') || hasMod(targetCfg, 'form')) ? `
+        <!-- TV 10-Foot 远场语音检索栏 (form) 与 4K 码率/帧率 8 色监控条 (chart) -->
+        <div style="display:grid;grid-template-columns:${(!isMobileVp && hasMod(targetCfg, 'chart') && hasMod(targetCfg, 'form')) ? '1fr 1.1fr' : '1fr'};gap:14px;">
+          ${hasMod(targetCfg, 'chart') ? `
+          <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:12px 14px;box-shadow:${s.boxShadow};display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:12px;font-weight:800;">
+              <span>📈 4K HDR 实时流媒体码率监控 (8色序列)</span>
+              <span style="font-family:${s.numCss};color:${s.brandTextHex};">85.4 Mbps</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;align-items:end;height:42px;padding:4px 6px;background:${s.subContainerBg};border-radius:${s.r.btn};">
+              ${s.dataViz.map((col, idx) => `<div style="height:${[62,84,56,92,74,98,68,88][idx]}%;background:${col};border-radius:3px 3px 0 0;"></div>`).join('')}
+            </div>
+          </div>` : ''}
+          ${hasMod(targetCfg, 'form') ? `
+          <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:12px 14px;box-shadow:${s.boxShadow};display:flex;flex-direction:column;justify-content:center;gap:6px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:800;">
+              <span>🎙️ 远场语音 / 遥控器焦点检索框</span>
+              <span style="font-size:11px;color:${s.focusRingHex};">Focus Ring 3px</span>
+            </div>
+            <input type="text" value="语音输入：播放 Dolby Vision 4K 演示片..." readonly class="focusable-target"
+              style="width:100%;padding:8px 12px;font-size:13px;font-weight:700;background:${s.subContainerBg};color:${s.textMain};border:2px solid ${s.focusRingHex};outline:2px solid ${s.focusRingHex};outline-offset:2px;border-radius:${s.r.btn};${s.stateInputExtra}">
+          </div>` : ''}
+        </div>` : ''}
+
         ${hasMod(targetCfg, 'list') ? `
         <!-- 4 列遥控器空间焦点海报墙 -->
         <div style="display:grid;grid-template-columns:${posterCols};gap:14px;padding-top:4px;">
@@ -4943,7 +5481,11 @@
       { key: 'multi_aurora',   name: 'multicolor.aurora (极光四色)',   desc: 'Green → Teal → Sky → Violet', css: s.multiGrads.aurora.css },
       { key: 'multi_spectrum', name: 'multicolor.spectrum (全谱四色)', desc: 'Red → Violet → Blue → Teal',  css: s.multiGrads.spectrum.css },
       { key: 'multi_cool',     name: 'multicolor.cool (冷调科技)',     desc: 'Sky → Blue → Violet',         css: s.multiGrads.cool.css },
-      { key: 'multi_warm',     name: 'multicolor.warm (暖阳庆典)',     desc: 'Red → Amber → Gold',          css: s.multiGrads.warm.css }
+      { key: 'multi_warm',     name: 'multicolor.warm (暖阳庆典)',     desc: 'Red → Amber → Gold',          css: s.multiGrads.warm.css },
+      { key: 'multi_sunset',   name: 'multicolor.sunset (落日流金)',   desc: 'Rose → Orange → Gold',        css: s.multiGrads.sunset.css },
+      { key: 'multi_sakura',   name: 'multicolor.sakura (樱花霓虹)',   desc: 'Pink → Orchid → Indigo',      css: s.multiGrads.sakura.css },
+      { key: 'multi_ocean',    name: 'multicolor.ocean (深海流光)',    desc: 'Navy → Cyan → Mint',          css: s.multiGrads.ocean.css },
+      { key: 'multi_cyber',    name: 'multicolor.cyber (赛博紫晶)',    desc: 'Violet → Fuchsia → Sky',      css: s.multiGrads.cyber.css }
     ];
 
     const tonalLevels = [
@@ -5013,9 +5555,9 @@
           </div>
         </div>
 
-        <!-- 2. 品牌渐变 (5种 AppGradients.brandOf) & 多色渐变 (4种 AppGradients.multicolorOf) -->
+        <!-- 2. 品牌渐变 (5种 AppGradients.brandOf) & 多色渐变 (8种 AppGradients.multicolorOf) -->
         <div style="background:${s.cardBg};${s.cardBackdrop}border:${s.cardBorder};border-radius:${s.r.card};padding:14px 16px;box-shadow:${s.boxShadow};">
-          <div style="font-size:${Math.round(14 * s.scaleNum)}px;font-weight:800;margin-bottom:8px;">2. 🌈 官方渐变体系 (AppGradients: 5 种品牌同色系渐变 + 4 种跨色相多色渐变 · 点击卡片可立即切换)</div>
+          <div style="font-size:${Math.round(14 * s.scaleNum)}px;font-weight:800;margin-bottom:8px;">2. 🌈 官方渐变体系 (AppGradients: 5 种品牌同色系渐变 + 8 种跨色相多色渐变 · 点击卡片可立即切换)</div>
 
           <div style="font-size:11.5px;font-weight:700;color:${s.textMuted};margin-bottom:6px;">A. 品牌同色系渐变 (<code>AppGradients.brandOf(context)</code> · 随当前品牌色 11 档色板实时联动)：</div>
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px;">
@@ -5090,6 +5632,10 @@
                   <span style="font-size:${Math.round(12.5 * s.scaleNum)}px;">Body 正文排版与行宽契约 (16px/14px · 60~75ch)</span>
                   <span style="font-size:10.5px;font-family:monospace;color:${s.textMuted};">lh: 1.5 · w400</span>
                 </div>
+                <div style="display:flex;align-items:baseline;justify-content:space-between;padding-top:4px;border-top:1px dashed ${s.borderCol};">
+                  <span style="font-size:11px;color:${s.textMain};font-weight:600;">中文: ${s.f.cn} · 西文: ${s.ef.cn}</span>
+                  <span style="font-size:11.5px;font-family:${s.numCss};font-variant-numeric:tabular-nums;font-weight:700;color:${s.brandTextHex};">${s.nf.cn}: ¥ 1,284,590.88</span>
+                </div>
                 <div style="display:flex;align-items:baseline;justify-content:space-between;">
                   <span style="font-size:11px;color:${s.textMuted};">交互状态: ${s.csObj.cn} · 动效: ${s.moObj.cn} · 图标: ${s.icObj.cn}</span>
                   <span style="font-size:10.5px;font-family:monospace;color:${s.brandTextHex};">tabular-nums</span>
@@ -5127,9 +5673,27 @@
               `).join('')}
             </div>
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;">
-              <span style="font-weight:700;color:${s.textMuted};">🔣 图标尺寸:</span>
+              <span style="font-weight:700;color:${s.textMuted};">🔣 SVG 图标尺寸 (24×24 viewBox · Rounded):</span>
               ${Object.entries(ICON_SIZE_DESC).map(([k, v]) => `
-                <span onclick="setOpt('iconSize','${k}')" style="cursor:pointer;padding:3px 9px;border-radius:${s.r.badge};background:${cfg.iconSize===k ? s.primaryHex : s.subContainerBg};color:${cfg.iconSize===k ? s.onBrandHex : s.textMain};border:1px solid ${s.borderCol};font-weight:700;">${v.cn}</span>
+                <span onclick="setOpt('iconSize','${k}')" style="cursor:pointer;padding:3px 9px;border-radius:${s.r.badge};background:${cfg.iconSize===k ? s.primaryHex : s.subContainerBg};color:${cfg.iconSize===k ? s.onBrandHex : s.textMain};border:1px solid ${s.borderCol};font-weight:700;display:inline-flex;align-items:center;gap:4px;">${dsIcon('sparkle', v.px, cfg.iconStroke === 'auto' ? v.stroke : s.icStroke)}<span>${v.cn} (默认线宽 ${v.stroke}px)</span></span>
+              `).join('')}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;">
+              <span style="font-weight:700;color:${s.textMuted};">✏️ SVG 图标线宽 (stroke-width):</span>
+              ${Object.entries(ICON_STROKE_DESC).map(([k, v]) => `
+                <span onclick="setOpt('iconStroke','${k}')" style="cursor:pointer;padding:3px 9px;border-radius:${s.r.badge};background:${cfg.iconStroke===k ? s.primaryHex : s.subContainerBg};color:${cfg.iconStroke===k ? s.onBrandHex : s.textMain};border:1px solid ${s.borderCol};font-weight:700;display:inline-flex;align-items:center;gap:4px;">${dsIcon('sliders', 15, v.val || s.icObj.stroke)}<span>${v.cn}</span></span>
+              `).join('')}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;">
+              <span style="font-weight:700;color:${s.textMuted};">🎨 图标着色策略 (docs/04 第4节):</span>
+              ${Object.entries(ICON_COLOR_DESC).map(([k, v]) => `
+                <span onclick="setOpt('iconColorMode','${k}')" style="cursor:pointer;padding:3px 9px;border-radius:${s.r.badge};background:${cfg.iconColorMode===k ? s.primaryHex : s.subContainerBg};color:${cfg.iconColorMode===k ? s.onBrandHex : s.textMain};border:1px solid ${s.borderCol};font-weight:700;">${v.cn}</span>
+              `).join('')}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;">
+              <span style="font-weight:700;color:${s.textMuted};">🌗 图标填充形态 (docs/04 第5节):</span>
+              ${Object.entries(ICON_STYLE_DESC).map(([k, v]) => `
+                <span onclick="setOpt('iconStyle','${k}')" style="cursor:pointer;padding:3px 9px;border-radius:${s.r.badge};background:${cfg.iconStyle===k ? s.primaryHex : s.subContainerBg};color:${cfg.iconStyle===k ? s.onBrandHex : s.textMain};border:1px solid ${s.borderCol};font-weight:700;display:inline-flex;align-items:center;gap:4px;">${dsIcon('diamond', 14, s.icStroke, '', k)}<span>${v.cn}</span></span>
               `).join('')}
             </div>
           </div>
@@ -5167,7 +5731,7 @@
 
     if (lockedSnapshot) {
       const sLock = computeStylesFor(lockedSnapshot);
-      container.innerHTML = `
+      container.innerHTML = upgradeHtmlEmojisToSvg(`
         <div class="compare-grid">
           <div style="padding:14px;border-radius:12px;background:${sLock.stageBg};font-family:${sLock.fontCss};border:2px dashed #556677;">
             <div style="font-size:12px;font-weight:700;color:${sLock.textMuted};margin-bottom:10px;">
@@ -5181,7 +5745,7 @@
             </div>
             ${renderComponentHighlightHtml(s, cfg)}
           </div>
-        </div>`;
+        </div>`, Math.min(18, s.icObj.px), s.icStroke, s.iconStyle);
     } else {
       let pageHtml = '';
       if (cfg.previewPage === 'web_portal') {
@@ -5206,16 +5770,16 @@
           tv:      { cls: 'vp-shell-tv',      label: '📺 TV 大屏视口 (10-Foot UI · 5% 过扫描安全区 · 遥控器焦点环)' }
         }[cfg.viewport] || { cls: 'vp-shell-desktop', label: '💻 桌面视口' };
 
-        container.innerHTML = `
+        container.innerHTML = upgradeHtmlEmojisToSvg(`
           <div class="${vpMeta.cls}" style="border:2px dashed ${s.primaryHex};border-radius:${s.r.card};padding:10px;background:rgba(128,128,128,0.03);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:4px 10px;border-radius:6px;background:${s.badgeBg};color:${s.badgeText};font-size:11px;font-weight:700;">
               <span>🎯 跨终端视口模拟：${vpMeta.label}</span>
               <button onclick="setOpt('viewport','auto')" style="border:none;background:transparent;color:${s.badgeText};font-size:11px;font-weight:800;cursor:pointer;text-decoration:underline;">恢复自动匹配</button>
             </div>
             ${pageHtml}
-          </div>`;
+          </div>`, Math.min(18, s.icObj.px), s.icStroke, s.iconStyle);
       } else {
-        container.innerHTML = pageHtml;
+        container.innerHTML = upgradeHtmlEmojisToSvg(pageHtml, Math.min(18, s.icObj.px), s.icStroke, s.iconStyle);
       }
     }
 
@@ -5296,8 +5860,10 @@
     const wcagBadge = document.getElementById('wcag-live-badge');
     if (wcagBadge) {
       const passLevel = brandContrast >= 7.0 ? 'AAA' : (brandContrast >= 4.5 ? 'AA' : 'AA-Large');
-      wcagBadge.textContent = `🛡️ WCAG 主色 ${brandContrast}:1 (${passLevel}) · 正文 ${bodyContrast}:1`;
+      wcagBadge.innerHTML = `${dsIcon('shield', 12, 2)} WCAG 主色 ${brandContrast}:1 (${passLevel}) · 正文 ${bodyContrast}:1`;
     }
+
+    upgradeDomEmojisToSvg(document.body);
 
     const platInfo = PLATFORM_DESC[cfg.platform] || PLATFORM_DESC.app;
     const navInfo = getNavInfo(cfg.platform, cfg.navStyle);
@@ -5314,12 +5880,12 @@
       ? `实测对比度 ${brandContrast}:1 ✓ 满足 WCAG AA (>=4.5:1)`
       : `实测对比度 ${brandContrast}:1 ⚠️ 低于 4.5:1 正文标准（建议切回规范自动档 ${s.isDark ? '400' : stdLightStop} 档）`;
 
-    const plainTalkCopyStr = `“技术同学，我们这次 ${platInfo.cn} 的视觉规范定稿如下（请严格按语义 Token 绑定，严禁在业务组件中硬编码 HEX 色号）：\n1️⃣ 终端与导航结构：面向 ${platInfo.cn}，导航固定采用「${navInfo.cn}」（${platInfo.tech}）；\n2️⃣ 品牌色阶 (50–950) 与语义色强制配对：品牌色选用「${s.c.cn}（基准 ${s.c.hex}，完整 11 档色阶已生成，${stopModeDesc}，${wcagPassStr}）」。组件开发请严格绑定 6 大品牌语义槽位：主按钮用 brand(${s.brandHex}) + onBrand(${s.onBrandHex})，浅底选中容器用 brandContainer(${s.brandContainerHex}) + onBrandContainer(${s.onBrandContainerHex})，次按钮/幽灵按钮/激活页签文字必须用 brandText(${s.brandTextHex}，确保叠加 8%/12% 状态层后对比度仍 ≥4.5:1)，焦点外框用 focusRing(${s.focusRingHex}，2px solid + 2px offset)；渐变采用「${s.activeGradLabel}」，默认明暗为「${modeDesc}」，另外${pickerInfo.plain}；\n3️⃣ 功能状态语义色与表面材质契约：4 大功能状态色（Success ${s.sem.success.main} / Warning ${s.sem.warning.main} / Error ${s.sem.error.main} / Info ${s.sem.info.main}）带浅底胶囊时内部文字必须配对 on*Container，白底/暗底独立状态文字必须用 *Text（特别注意浅色警告文字必须用 warningText ${SEMANTIC_STATUS_TOKENS.light.warning.text}，严禁直接用 #F5A100 当文字色）。卡片表面采用「${s.sf.cn}（边框 ${s.borderPx} ${s.borderCol} · 表单输入框边框固定用 controlOutline #768898 ≥3:1 · 毛玻璃模糊 ${s.blurPx}px）」，圆角「${s.r.token}」，海拔阴影「${s.e.cn}」，密度「${s.d.cn}」，交互状态遵循「${s.csObj.cn}（Hover 8% / Focus 12% / Pressed 12% / Dragged 16% / Disabled 38%）· 动效 ${s.moObj.cn} · 图标 ${s.icObj.cn}」；\n4️⃣ 中英与数字三字体体系：中文主字体「${s.f.cn}」，英文 UI 字体「${s.ef.cn}」，金额与核心指标数字「${s.nf.cn}（强制开启 tabular-nums 等宽对齐）」，全局字阶缩放 ${Math.round(s.scaleNum * 100)}%。”`;
+    const plainTalkCopyStr = `“技术同学，我们这次 ${platInfo.cn} 的视觉规范定稿如下（请严格按语义 Token 绑定，严禁在业务组件中硬编码 HEX 色号）：\n1️⃣ 终端与导航结构：面向 ${platInfo.cn}，导航固定采用「${navInfo.cn}」（${platInfo.tech}）；\n2️⃣ 品牌色阶 (50–950) 与语义色强制配对：品牌色选用「${s.c.cn}（基准 ${s.c.hex}，完整 11 档色阶已生成，${stopModeDesc}，${wcagPassStr}）」。组件开发请严格绑定 6 大品牌语义槽位：主按钮用 brand(${s.brandHex}) + onBrand(${s.onBrandHex})，浅底选中容器用 brandContainer(${s.brandContainerHex}) + onBrandContainer(${s.onBrandContainerHex})，次按钮/幽灵按钮/激活页签文字必须用 brandText(${s.brandTextHex}，确保叠加 8%/12% 状态层后对比度仍 ≥4.5:1)，焦点外框用 focusRing(${s.focusRingHex}，2px solid + 2px offset)；渐变采用「${s.activeGradLabel}」，默认明暗为「${modeDesc}」，另外${pickerInfo.plain}；\n3️⃣ 功能状态语义色与表面材质契约：4 大功能状态色（Success ${s.sem.success.main} / Warning ${s.sem.warning.main} / Error ${s.sem.error.main} / Info ${s.sem.info.main}）带浅底胶囊时内部文字必须配对 on*Container，白底/暗底独立状态文字必须用 *Text（特别注意浅色警告文字必须用 warningText ${SEMANTIC_STATUS_TOKENS.light.warning.text}，严禁直接用 #F5A100 当文字色）。卡片表面采用「${s.sf.cn}（边框 ${s.borderPx} ${s.borderCol} · 表单输入框边框固定用 controlOutline #768898 ≥3:1，报错态用 1.5px ${s.sem.error.main} + 错误提示 ${s.sem.error.text} · 毛玻璃模糊 ${s.blurPx}px）」，圆角「${s.r.token}」，海拔阴影「${s.e.cn}」，密度「${s.d.cn}」，交互状态遵循「${s.csObj.cn}（Hover 8% / Focus 12% / Pressed 12% / Dragged 16% / Disabled 38%）· 动效 ${s.moObj.cn} · SVG 图标尺寸 ${s.icObj.cn} / 线宽 ${s.icStroke}px(${s.icStrokeObj.cn}) / 形态 ${s.icStyleObj.cn} / 着色策略：${s.icColorObj.plain}」；\n4️⃣ 中英与数字三字体体系：中文主字体「${s.f.cn}」，英文 UI 字体「${s.ef.cn}」，金额与核心指标数字「${s.nf.cn}（强制开启 tabular-nums 等宽对齐）」，全局字阶缩放 ${Math.round(s.scaleNum * 100)}%。”`;
     window.__latestPlainTalkCopyText = plainTalkCopyStr;
 
     const plainTalkHtml = `1️⃣ <b>终端与导航结构</b>：面向 <b>${platInfo.cn}</b>，导航固定采用「<b>${navInfo.cn}</b>」（${platInfo.tech}）；<br>` +
       `2️⃣ <b>品牌 11 档色阶与语义槽位配对</b>：选用「<b>${s.c.cn}</b>」（${stopModeDesc} · ${wcagPassStr}）。主按钮绑定 <code>brand(${s.brandHex}) + onBrand(${s.onBrandHex})</code>，选中浅底容器绑定 <code>brandContainer(${s.brandContainerHex}) + onBrandContainer(${s.onBrandContainerHex})</code>，次按钮/链接/激活Tab文字强制绑定 <code>brandText(${s.brandTextHex})</code>，渐变采用「<b>${s.activeGradLabel}</b>」，明暗「<b>${modeDesc}</b>」，${pickerInfo.plain}；<br>` +
-      `3️⃣ <b>状态语义色与表面交互契约</b>：状态胶囊底色 <code>*Container</code> 内部文字强制配对 <code>on*Container</code>，独立状态文字用 <code>*Text</code>（浅色警告文字必用 <code>#9A6200</code>）。表面采用「<b>${s.sf.cn}</b>（边框 ${s.borderPx} · 表单边框固定 <code>controlOutline #768898</code> ≥3:1 · 模糊 ${s.blurPx}px）」，圆角「<b>${s.r.token}</b>」，阴影「<b>${s.e.cn}</b>」，密度「<b>${s.d.cn}</b>」，状态「<b>${s.csObj.cn} · 动效 ${s.moObj.cn} · 图标 ${s.icObj.cn}</b>」；<br>` +
+      `3️⃣ <b>状态语义色与表面交互契约</b>：状态胶囊底色 <code>*Container</code> 内部文字强制配对 <code>on*Container</code>，独立状态文字用 <code>*Text</code>（浅色警告文字必用 <code>#9A6200</code>）。表面采用「<b>${s.sf.cn}</b>（边框 ${s.borderPx} · 表单边框固定 <code>controlOutline #768898</code> ≥3:1，报错态 <code>1.5px ${s.sem.error.main}</code> · 模糊 ${s.blurPx}px）」，圆角「<b>${s.r.token}</b>」，阴影「<b>${s.e.cn}</b>」，密度「<b>${s.d.cn}</b>」，状态「<b>${s.csObj.cn} · 动效 ${s.moObj.cn} · 图标 ${s.icObj.cn} · 线宽 ${s.icStroke}px(${s.icStrokeObj.cn}) · 形态 ${s.icStyleObj.cn} · 着色 ${s.icColorObj.cn}</b>」；<br>` +
       `4️⃣ <b>中英数字三字体体系</b>：中文「<b>${s.f.cn}</b>」+ 英文 UI「<b>${s.ef.cn}</b>」+ 数字「<b>${s.nf.cn}</b>（强制开启 <code>tabular-nums</code> 等宽对齐）」，字阶缩放 <b>${Math.round(s.scaleNum * 100)}%</b>。`;
 
     document.getElementById('plain-talk-box').innerHTML = plainTalkHtml;
@@ -5369,11 +5935,17 @@
    - 当前渐变: ${s.activeGradLabel} -> ${s.activeGradCss}
    - 8色无障碍图表色板 (AppDataViz series1–8): ${s.dataViz.join(', ')}
 
-5. 表面材质、圆角 (AppRadius)、阴影 (AppShadows)、密度 (AppSpacing) 与组件交互矩阵 (docs/09, docs/02-motion, docs/04-iconography):
+5. 表面材质、圆角 (AppRadius)、阴影 (AppShadows)、密度 (AppSpacing)、组件交互矩阵与 SVG 图标规范 (docs/09, docs/02-motion, docs/04-iconography):
    - 表面材质: ${s.sf.cn} -> ${s.sf.tech} | 背景毛玻璃模糊: ${s.blurPx}px
    - 圆角标尺: ${s.r.token} | 海拔阴影: ${s.e.token} | 密度与内边距: ${s.d.token}
    - 组件状态矩阵: ${s.csObj.token} (Default 0%, Hover +8%, Focus +12% & 2px ring, Pressed +12%, Dragged +16%, Disabled 38% content / 12% container)
-   - 动效契约: ${s.moObj.token} (100ms fast / 200ms normal / 300ms slow / 400ms slower) | 图标尺寸标尺: ${s.icObj.token} (12/16/20/24/32/40px)
+   - 动效契约: ${s.moObj.token} (100ms fast / 200ms normal / 300ms slow / 400ms slower)
+   - SVG 矢量图标规范 (docs/04-iconography.md):
+     • 尺寸档位: ${s.icObj.token} (当前 ${s.icObj.px}px)
+     • 描边线宽: ${s.icStrokeObj.token} (当前生效 stroke-width = ${s.icStroke}px, stroke-linecap="round", stroke-linejoin="round", viewBox="0 0 24 24")
+     • 填充形态: ${s.icStyleObj.cn} -> ${s.icStyleObj.token}
+     • 图标着色策略: ${s.icColorObj.cn} -> ${s.icColorObj.token}
+     • 无障碍与国际化: 禁用态固定 38% 不透明度; 方向性图标 (箭头/返回/撤销) 在 RTL 下自动 scaleX(-1) 镜像, 徽章/时钟/勾号不翻转
 
 6. 字体排印体系 (本地字体包 fonts/*.woff2 + Tabular Numerals 契约):
    - 中文主字体: ${s.f.cn} -> ${s.f.token} (CSS: ${s.f.css})
@@ -5422,7 +5994,7 @@ ${cssVarsBlock}
   --ds-info-text: ${s.sem.info.text};
   --ds-info-container: ${s.sem.info.container};
   --ds-on-info-container: ${s.sem.info.onContainer};
-  /* 空间、圆角、阴影、动效与字体 */
+  /* 空间、圆角、阴影、动效、图标与字体 */
   --ds-radius-card: ${s.r.card};
   --ds-radius-btn: ${s.r.btn};
   --ds-shadow-card: ${s.boxShadow};
@@ -5430,6 +6002,7 @@ ${cssVarsBlock}
   --ds-motion-duration: ${cfg.reducedMotion ? '0ms' : s.moObj.ms};
   --ds-motion-easing: ${s.moObj.curve};
   --ds-icon-size: ${s.icObj.px}px;
+  --ds-icon-stroke: ${s.icStroke}px;
   --ds-font-sans: ${s.fontCss};
   --ds-font-num: ${s.numCss};
 }`;
@@ -5451,9 +6024,9 @@ ${cssVarsBlock}
     safeCopyText(plainText, () => {
       const btn = document.getElementById('copy-plain-btn');
       if (btn) {
-        const old = btn.textContent;
-        btn.textContent = '✅ 已复制口头话术！';
-        setTimeout(() => { btn.textContent = old; }, 2000);
+        const old = btn.innerHTML;
+        btn.innerHTML = replaceTextEmojisWithSvg('✅ 已复制口头话术！', 12.5, 2);
+        setTimeout(() => { btn.innerHTML = old; }, 2000);
       }
     });
   }
@@ -5466,13 +6039,13 @@ ${cssVarsBlock}
     safeCopyText(fullText, () => {
       const btn = document.getElementById('copy-btn');
       const topBtn = document.getElementById('top-copy-btn');
-      const old = btn ? btn.textContent : '';
-      const oldTop = topBtn ? topBtn.textContent : '';
-      if (btn) btn.textContent = '✅ 已复制完整交接契约！可直接发给技术';
-      if (topBtn) topBtn.textContent = '✅ 已复制！';
+      const old = btn ? btn.innerHTML : '';
+      const oldTop = topBtn ? topBtn.innerHTML : '';
+      if (btn) btn.innerHTML = replaceTextEmojisWithSvg('✅ 已复制完整交接契约！可直接发给技术', 12.5, 2);
+      if (topBtn) topBtn.innerHTML = replaceTextEmojisWithSvg('✅ 已复制！', 12.5, 2);
       setTimeout(() => {
-        if (btn) btn.textContent = old;
-        if (topBtn) topBtn.textContent = oldTop;
+        if (btn) btn.innerHTML = old;
+        if (topBtn) topBtn.innerHTML = oldTop;
       }, 2200);
     });
   }
@@ -5630,6 +6203,30 @@ ${cssVarsBlock}
         "lightShadow": s.e.lightCss,
         "darkShadow": s.e.darkCss
       },
+      "iconography": {
+        "format": "SVG (Rounded Vector / Material Symbols Rounded)",
+        "viewBox": "0 0 24 24",
+        "strokeLinecap": "round",
+        "strokeLinejoin": "round",
+        "iconStyle": cfg.iconStyle || "outline",
+        "iconStyleToken": s.icStyleObj.token,
+        "colorMode": cfg.iconColorMode || "semantic",
+        "colorBinding": s.icColorObj.token,
+        "disabledOpacity": 0.38,
+        "rtlDirectionalMirror": true,
+        "activeSizeKey": cfg.iconSize,
+        "activeSizePx": s.icObj.px,
+        "activeStrokeKey": cfg.iconStroke || "auto",
+        "activeStrokeWidthPx": s.icStroke,
+        "scale": {
+          "xs":  { "sizePx": 12, "strokeWidthPx": 1.25 },
+          "sm":  { "sizePx": 16, "strokeWidthPx": 1.5  },
+          "md":  { "sizePx": 20, "strokeWidthPx": 1.75 },
+          "lg":  { "sizePx": 24, "strokeWidthPx": 2.0  },
+          "xl":  { "sizePx": 32, "strokeWidthPx": 2.25 },
+          "xxl": { "sizePx": 40, "strokeWidthPx": 2.5  }
+        }
+      },
       "accessibility": {
         "focusRingVisible": !!cfg.focusRing,
         "focusRingWidthPx": 2,
@@ -5658,6 +6255,105 @@ ${cssVarsBlock}
     const a = document.createElement('a');
     a.href = url;
     a.download = `tokens-v2-${cfg.platform}-${s.c.hex.replace('#','')}-${cfg.surface}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // 一键导出 Web / H5 / 小程序即插即用的完整 CSS Custom Properties 样式表 (.css)
+  function downloadCssSpec() {
+    saveCurrentToHistory('导出CSS');
+    const sLight = computeStylesFor({ ...cfg, mode: 'light' });
+    const sDark = computeStylesFor({ ...cfg, mode: 'dark' });
+    const sNow = computeStylesFor(cfg);
+    const scaleVars = SCALE_STOPS.map(st => `  --ds-brand-${st}: ${sNow.scale[st]};`).join('\n');
+
+    const buildModeBlock = (s, selector) => `${selector} {
+  /* 品牌语义槽位 (6) */
+  --ds-brand: ${s.brandHex};
+  --ds-on-brand: ${s.onBrandHex};
+  --ds-brand-container: ${s.brandContainerHex};
+  --ds-on-brand-container: ${s.onBrandContainerHex};
+  --ds-brand-text: ${s.brandTextHex};
+  --ds-focus-ring: ${s.focusRingHex};
+  --ds-gradient-active: ${s.activeGradCss};
+  --ds-gradient-brand-primary: ${s.brandGrads.primary};
+  --ds-gradient-brand-strong: ${s.brandGrads.strong};
+  --ds-gradient-brand-subtle: ${s.brandGrads.subtle};
+  --ds-gradient-brand-glow: ${s.brandGrads.glow};
+  --ds-gradient-brand-surface: ${s.brandGrads.surface};
+  /* 表面与文本语义槽位 (11) */
+  --ds-bg: ${s.stageBg};
+  --ds-surface: ${s.surfaceBase};
+  --ds-surface-variant: ${s.surfaceVariant};
+  --ds-surface-low: ${s.surfaceLow};
+  --ds-surface-container: ${s.surfaceContainer};
+  --ds-surface-high: ${s.surfaceHigh};
+  --ds-text-primary: ${s.textMain};
+  --ds-text-secondary: ${s.textMuted};
+  --ds-text-tertiary: ${s.textTertiary};
+  --ds-border: ${s.borderCol};
+  --ds-outline-variant: ${s.outlineVariant};
+  --ds-control-outline: ${s.controlOutline};
+  /* 功能状态语义槽位 (15) */
+  --ds-success: ${s.sem.success.main};
+  --ds-success-text: ${s.sem.success.text};
+  --ds-success-container: ${s.sem.success.container};
+  --ds-on-success-container: ${s.sem.success.onContainer};
+  --ds-warning: ${s.sem.warning.main};
+  --ds-warning-text: ${s.sem.warning.text};
+  --ds-warning-container: ${s.sem.warning.container};
+  --ds-on-warning-container: ${s.sem.warning.onContainer};
+  --ds-error: ${s.sem.error.main};
+  --ds-on-error: ${s.sem.error.on};
+  --ds-error-text: ${s.sem.error.text};
+  --ds-error-container: ${s.sem.error.container};
+  --ds-on-error-container: ${s.sem.error.onContainer};
+  --ds-info: ${s.sem.info.main};
+  --ds-info-text: ${s.sem.info.text};
+  --ds-info-container: ${s.sem.info.container};
+  --ds-on-info-container: ${s.sem.info.onContainer};
+  --ds-shadow-card: ${s.boxShadow};
+}`;
+
+    const cssContent = `/**
+ * Cross-Platform Design System Tokens v2.0 (CSS Custom Properties)
+ * Target Platform: ${PLATFORM_DESC[cfg.platform]?.cn || cfg.platform}
+ * Brand: ${sNow.c.cn} (${sNow.c.hex}) | Surface: ${sNow.sf.cn} | Radius: ${sNow.r.token}
+ * Generated at: ${new Date().toISOString()}
+ */
+
+:root {
+  /* 品牌 11 档基础色阶 (50 - 950) */
+${scaleVars}
+  /* 空间、圆角、动效、SVG 图标与字体标尺 */
+  --ds-radius-card: ${sNow.r.card};
+  --ds-radius-btn: ${sNow.r.btn};
+  --ds-radius-badge: ${sNow.r.badge};
+  --ds-blur-backdrop: ${sNow.blurPx}px;
+  --ds-motion-duration: ${cfg.reducedMotion ? '0ms' : sNow.moObj.ms};
+  --ds-motion-easing: ${sNow.moObj.curve};
+  --ds-icon-size: ${sNow.icObj.px}px;
+  --ds-icon-stroke: ${sNow.icStroke}px;
+  --ds-font-sans: ${sNow.fontCss};
+  --ds-font-num: ${sNow.numCss};
+}
+
+/* 默认浅色模式 (Light Mode) */
+${buildModeBlock(sLight, ':root, :root[data-mode="light"]')}
+
+/* 深色模式 (Dark Mode) */
+${buildModeBlock(sDark, ':root[data-mode="dark"]')}
+
+@media (prefers-color-scheme: dark) {
+${buildModeBlock(sDark, '  :root[data-mode="system"]')}
+}
+`;
+
+    const blob = new Blob([cssContent], { type: 'text/css;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `design-tokens-v2-${cfg.platform}-${sNow.c.hex.replace('#','')}.css`;
     a.click();
     URL.revokeObjectURL(url);
   }
